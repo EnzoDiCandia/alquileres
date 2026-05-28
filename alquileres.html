@@ -406,7 +406,7 @@
       </div>
       <div class="table-wrapper">
         <table>
-          <thead><tr><th>#</th><th>Propiedad</th><th>Inquilino</th><th>Desde</th><th>Hasta</th><th>Monto</th><th>Próximo ajuste</th><th>Estado</th></tr></thead>
+          <thead><tr><th>#</th><th>Propiedad</th><th>Inquilino</th><th>Desde</th><th>Hasta</th><th>Monto</th><th>Próximo ajuste</th><th>Archivo</th><th>Estado</th></tr></thead>
           <tbody id="tabla-contratos"></tbody>
         </table>
       </div>
@@ -1037,6 +1037,13 @@ async function cargarContratos() {
     <td>${c.fechaInicio}</td><td>${c.fechaFin}</td>
     <td class="mono">${formatPeso(c.montoBase)}</td>
     <td>${badgeAjuste(c)}</td>
+    <td>${c.archivoPdfRuta
+      ? `<a href="${c.archivoPdfRuta}" target="_blank" class="btn btn-secondary" style="padding:3px 10px;font-size:12px">📄 Ver</a>
+         <button class="btn btn-danger" style="padding:3px 8px;font-size:12px" onclick="eliminarArchivo(${c.id})">✕</button>`
+      : `<label class="btn btn-secondary" style="padding:3px 10px;font-size:12px;cursor:pointer">
+           📎 Subir<input type="file" style="display:none" accept=".doc,.docx,.pdf" onchange="subirArchivo(${c.id}, this)">
+         </label>`
+    }</td>
     <td><span class="badge ${c.activo ? 'badge-green' : 'badge-red'}">${c.activo ? 'Activo' : 'Inactivo'}</span></td>
   </tr>`).join('');
   contratos = data;
@@ -1107,6 +1114,44 @@ function abrirPeriodicidad(idContrato) {
   document.getElementById('per-meses').value = c.periodicidadMeses || 3;
   document.getElementById('per-ultimo-ajuste').value = c.ultimoAjuste || c.fechaInicio;
   openModal('modal-periodicidad');
+}
+
+// ─── ARCHIVOS ────────────────────────────────────────────────────────────────
+async function subirArchivo(idContrato, input) {
+  const archivo = input.files[0];
+  if (!archivo) return;
+  const label = input.parentElement;
+  label.textContent = 'Subiendo...';
+  try {
+    const formData = new FormData();
+    formData.append('archivo', archivo);
+    const res = await fetch(`${API}/contratos/${idContrato}/upload`, {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+    if (data.ok) {
+      await cargarDatosBase();
+      cargarContratos();
+    } else {
+      alert('Error al subir: ' + data.mensaje);
+      label.innerHTML = '📎 Subir<input type="file" style="display:none" accept=".doc,.docx,.pdf" onchange="subirArchivo(' + idContrato + ', this)">';
+    }
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+async function eliminarArchivo(idContrato) {
+  if (!confirm('¿Eliminar el archivo de este contrato?')) return;
+  try {
+    const res = await fetch(`${API}/contratos/${idContrato}/archivo`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.ok) { await cargarDatosBase(); cargarContratos(); }
+    else alert('Error: ' + data.mensaje);
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
 }
 
 async function confirmarPeriodicidad() {

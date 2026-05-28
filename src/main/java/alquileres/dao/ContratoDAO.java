@@ -49,7 +49,8 @@ public class ContratoDAO {
         return contratos;
     }
 
-    // ─── BUSCAR CONTRATO POR ID ───────────────────────────────────────────────────
+    // ─── BUSCAR CONTRATO POR ID
+    // ───────────────────────────────────────────────────
 
     public Contrato buscarContratoPorId(int id) throws SQLException {
         String sql = "SELECT * FROM contrato WHERE id=?";
@@ -57,7 +58,8 @@ public class ContratoDAO {
                 PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) return mapear(rs);
+            if (rs.next())
+                return mapear(rs);
         } catch (SQLException e) {
             e.printStackTrace();
             throw e;
@@ -74,7 +76,8 @@ public class ContratoDAO {
                 PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idInquilino);
             ResultSet rs = ps.executeQuery();
-            while (rs.next()) contratos.add(mapear(rs));
+            while (rs.next())
+                contratos.add(mapear(rs));
         } catch (SQLException e) {
             e.printStackTrace();
             throw e;
@@ -91,7 +94,8 @@ public class ContratoDAO {
                 PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idPropiedad);
             ResultSet rs = ps.executeQuery();
-            while (rs.next()) contratos.add(mapear(rs));
+            while (rs.next())
+                contratos.add(mapear(rs));
         } catch (SQLException e) {
             e.printStackTrace();
             throw e;
@@ -104,8 +108,8 @@ public class ContratoDAO {
 
     public boolean insertarContrato(Contrato c) throws SQLException {
         String sql = "INSERT INTO contrato (id_propiedad, id_inquilino, fecha_inicio, fecha_fin, " +
-                     "monto_base, deposito, archivo_pdf_ruta, periodicidad_meses, ultimo_ajuste) " +
-                     "VALUES (?,?,?,?,?,?,?,?,?)";
+                "monto_base, deposito, archivo_pdf_ruta, periodicidad_meses, ultimo_ajuste) " +
+                "VALUES (?,?,?,?,?,?,?,?,?)";
         try (Connection con = Conexion.getConexion();
                 PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, c.getIdPropiedad());
@@ -166,23 +170,24 @@ public class ContratoDAO {
     // dentro de los próximos 'diasAviso' días (por defecto 30)
     //
     // Lógica: proximo_ajuste = ultimo_ajuste + periodicidad_meses
-    //         si (proximo_ajuste - hoy) <= diasAviso  →  incluir en la lista
+    // si (proximo_ajuste - hoy) <= diasAviso → incluir en la lista
 
     public List<Contrato> contratosProximosAjuste(int diasAviso) throws SQLException {
         List<Contrato> contratos = new ArrayList<>();
         String sql = "SELECT * FROM contrato " +
-                     "WHERE activo = TRUE " +
-                     "  AND periodicidad_meses IS NOT NULL " +
-                     "  AND ultimo_ajuste IS NOT NULL " +
-                     "  AND DATE_ADD(ultimo_ajuste, INTERVAL periodicidad_meses MONTH) " +
-                     "      <= DATE_ADD(CURDATE(), INTERVAL ? DAY) " +
-                     "  AND DATE_ADD(ultimo_ajuste, INTERVAL periodicidad_meses MONTH) >= CURDATE() " +
-                     "ORDER BY DATE_ADD(ultimo_ajuste, INTERVAL periodicidad_meses MONTH) ASC";
+                "WHERE activo = TRUE " +
+                "  AND periodicidad_meses IS NOT NULL " +
+                "  AND ultimo_ajuste IS NOT NULL " +
+                "  AND DATE_ADD(ultimo_ajuste, INTERVAL periodicidad_meses MONTH) " +
+                "      <= DATE_ADD(CURDATE(), INTERVAL ? DAY) " +
+                "  AND DATE_ADD(ultimo_ajuste, INTERVAL periodicidad_meses MONTH) >= CURDATE() " +
+                "ORDER BY DATE_ADD(ultimo_ajuste, INTERVAL periodicidad_meses MONTH) ASC";
         try (Connection con = Conexion.getConexion();
                 PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, diasAviso);
             ResultSet rs = ps.executeQuery();
-            while (rs.next()) contratos.add(mapear(rs));
+            while (rs.next())
+                contratos.add(mapear(rs));
         } catch (SQLException e) {
             e.printStackTrace();
             throw e;
@@ -192,7 +197,8 @@ public class ContratoDAO {
 
     // ─── ACTUALIZAR PERIODICIDAD DE UN CONTRATO EXISTENTE ────────────────────────
 
-    public boolean actualizarPeriodicidad(int id, int periodicidadMeses, java.time.LocalDate ultimoAjuste) throws SQLException {
+    public boolean actualizarPeriodicidad(int id, int periodicidadMeses, java.time.LocalDate ultimoAjuste)
+            throws SQLException {
         String sql = "UPDATE contrato SET periodicidad_meses=?, ultimo_ajuste=? WHERE id=?";
         try (Connection con = Conexion.getConexion();
                 PreparedStatement ps = con.prepareStatement(sql)) {
@@ -205,4 +211,14 @@ public class ContratoDAO {
             throw e;
         }
     }
+
+    public boolean actualizarRutaPdf(int id, String ruta) throws SQLException {
+    String sql = "UPDATE contrato SET archivo_pdf_ruta=? WHERE id=?";
+    try (Connection con = Conexion.getConexion();
+            PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, ruta);
+        ps.setInt(2, id);
+        return ps.executeUpdate() > 0;
+    }
+}
 }

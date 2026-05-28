@@ -2,7 +2,9 @@ package alquileres.controller;
 
 import alquileres.dao.ContratoDAO;
 import alquileres.modelo.Contrato;
+import alquileres.service.StorageService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -15,6 +17,7 @@ import java.util.Map;
 public class ContratoController {
 
     private ContratoDAO dao = new ContratoDAO();
+    private StorageService storageService = new StorageService();
 
     @GetMapping
     public List<Contrato> listarTodos() throws SQLException {
@@ -46,19 +49,11 @@ public class ContratoController {
         return dao.desactivarContrato(id);
     }
 
-    // ─── CONTRATOS PRÓXIMOS A AJUSTE ─────────────────────────────────────────────
-    // GET /contratos/proximos-ajuste         → usa 30 días por defecto
-    // GET /contratos/proximos-ajuste?dias=15 → configurable
-
     @GetMapping("/proximos-ajuste")
     public List<Contrato> proximosAjuste(
             @RequestParam(defaultValue = "30") int dias) throws SQLException {
         return dao.contratosProximosAjuste(dias);
     }
-
-    // ─── REGISTRAR AJUSTE DE MONTO ───────────────────────────────────────────────
-    // PUT /contratos/{id}/ajuste
-    // Body: { "nuevoMonto": 150000, "fechaAjuste": "2025-06-01" }
 
     @PutMapping("/{id}/ajuste")
     public boolean registrarAjuste(
@@ -71,10 +66,6 @@ public class ContratoController {
         return dao.registrarAjuste(id, nuevoMonto, fechaAjuste);
     }
 
-    // ─── CONFIGURAR PERIODICIDAD EN CONTRATO EXISTENTE ───────────────────────────
-    // PUT /contratos/{id}/periodicidad
-    // Body: { "periodicidadMeses": 3, "ultimoAjuste": "2025-03-01" }
-
     @PutMapping("/{id}/periodicidad")
     public boolean actualizarPeriodicidad(
             @PathVariable int id,
@@ -84,5 +75,39 @@ public class ContratoController {
                 ? LocalDate.parse(body.get("ultimoAjuste"))
                 : LocalDate.now();
         return dao.actualizarPeriodicidad(id, periodicidadMeses, ultimoAjuste);
+    }
+
+    // ─── SUBIR ARCHIVO A SUPABASE ─────────────────────────────────────────────────
+
+    @PostMapping("/{id}/upload")
+    public Map<String, Object> subirArchivo(
+            @PathVariable int id,
+            @RequestParam("archivo") MultipartFile archivo) {
+        try {
+            String url = storageService.subirArchivo(archivo, id);
+            dao.actualizarRutaPdf(id, url);
+            return Map.of("ok", true, "url", url);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Map.of("ok", false, "mensaje", e.getMessage());
+        }
+    }
+
+    // ─── ELIMINAR ARCHIVO DE SUPABASE ────────────────────────────────────────────
+
+    @DeleteMapping("/{id}/archivo")
+    public Map<String, Object> eliminarArchivo(@PathVariable int id) {
+        try {
+            Contrato c = dao.buscarContratoPorId(id);
+            if (c == null || c.getArchivoPdfRuta() == null) {
+                return Map.of("ok", false, "mensaje", "No hay archivo para este contrato");
+            }
+            storageService.eliminarArchivo(c.getArchivoPdfRuta());
+            dao.actualizarRutaPdf(id, null);
+            return Map.of("ok", true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Map.of("ok", false, "mensaje", e.getMessage());
+        }
     }
 }
