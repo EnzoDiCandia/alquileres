@@ -13,7 +13,7 @@ public class Inquilino {
 public Inquilino(){
 }
 
-public Inquilino(int id , String nombre, String telefono , String email, String documento , boolean activo){
+public Inquilino(Integer id , String nombre, String telefono , String email, String documento , boolean activo){
     this.id=id;
     this.nombre=nombre;
     this.telefono=telefono;
@@ -25,7 +25,7 @@ public Inquilino(int id , String nombre, String telefono , String email, String 
 
             // SETTERS Y GETTERS
 
-public void setId(int id){
+public void setId(Integer id){
     this.id=id;
 }
 

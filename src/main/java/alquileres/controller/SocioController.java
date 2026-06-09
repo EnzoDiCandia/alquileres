@@ -34,5 +34,4 @@ public class SocioController {
     public boolean desactivar(@PathVariable int id) throws SQLException {
         return dao.desactivarSocio(id);
     }
-
 }
