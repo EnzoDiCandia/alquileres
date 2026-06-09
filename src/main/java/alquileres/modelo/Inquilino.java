@@ -1,7 +1,7 @@
 package alquileres.modelo;
 
 public class Inquilino {
-    private int id;
+    private Integer id;
     private String nombre;
     private String telefono;
     private String email;
