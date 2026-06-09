@@ -35,8 +35,4 @@ public class SocioController {
         return dao.desactivarSocio(id);
     }
 
-    @GetMapping("/hash/{texto}")
-    public String generarHash(@PathVariable String texto) {
-        return new BCryptPasswordEncoder().encode(texto);
-    }
 }
