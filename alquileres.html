@@ -453,6 +453,21 @@
   </main>
 </div>
 
+<div id="modal-editar-inquilino" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <h3>Editar Inquilino</h3>
+    <input type="hidden" id="edit-inq-id">
+    <input class="input" id="edit-inq-nombre" placeholder="Nombre completo">
+    <input class="input" id="edit-inq-telefono" placeholder="Teléfono">
+    <input class="input" id="edit-inq-email" placeholder="Email">
+    <input class="input" id="edit-inq-documento" placeholder="Documento">
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="guardarEdicionInquilino()">Guardar</button>
+      <button class="btn btn-secondary" onclick="closeModal('modal-editar-inquilino')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODALES -->
 <div class="modal-overlay" id="modal-pago">
   <div class="modal">
@@ -1230,7 +1245,10 @@ function renderInquilinos() {
     <td>${i.nombre}</td><td>${i.telefono || '—'}</td><td>${i.email || '—'}</td>
     <td class="mono">${i.documento || '—'}</td>
     <td><span class="badge ${i.activo ? 'badge-green' : 'badge-red'}">${i.activo ? 'Activo' : 'Inactivo'}</span></td>
-    <td>${i.activo ? `<button class="btn btn-danger" onclick="desactivarInquilino(${i.id})">Desactivar</button>` : `<button class="btn btn-success" onclick="activarInquilino(${i.id})">Activar</button>`}</td>
+    <td>
+      <button class="btn btn-secondary" onclick="abrirEditarInquilino(${i.id}, '${i.nombre}', '${i.telefono || ''}', '${i.email || ''}', '${i.documento || ''}')">Editar</button>
+      ${i.activo ? `<button class="btn btn-danger" onclick="desactivarInquilino(${i.id})">Desactivar</button>` : `<button class="btn btn-success" onclick="activarInquilino(${i.id})">Activar</button>`}
+    </td>
   </tr>`).join('');
 }
 
@@ -1238,6 +1256,28 @@ async function registrarInquilino() {
   const body = { nombre: document.getElementById('inq-nombre').value, telefono: document.getElementById('inq-telefono').value, email: document.getElementById('inq-email').value, documento: document.getElementById('inq-documento').value };
   await fetch(`${API}/inquilinos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   closeModal('modal-inquilino');
+  todosInquilinos = await fetch(`${API}/inquilinos/todos`).then(r => r.json());
+  renderInquilinos();
+}
+function abrirEditarInquilino(id, nombre, telefono, email, documento) {
+  document.getElementById('edit-inq-id').value = id;
+  document.getElementById('edit-inq-nombre').value = nombre;
+  document.getElementById('edit-inq-telefono').value = telefono;
+  document.getElementById('edit-inq-email').value = email;
+  document.getElementById('edit-inq-documento').value = documento;
+  openModal('modal-editar-inquilino');
+}
+
+async function guardarEdicionInquilino() {
+  const id = document.getElementById('edit-inq-id').value;
+  const body = {
+    nombre: document.getElementById('edit-inq-nombre').value,
+    telefono: document.getElementById('edit-inq-telefono').value,
+    email: document.getElementById('edit-inq-email').value,
+    documento: document.getElementById('edit-inq-documento').value
+  };
+  await fetch(`${API}/inquilinos/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  closeModal('modal-editar-inquilino');
   todosInquilinos = await fetch(`${API}/inquilinos/todos`).then(r => r.json());
   renderInquilinos();
 }

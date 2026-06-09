@@ -311,5 +311,5 @@ public class InquilinoDAO {
         ps.setInt(5, i.getId());
         return ps.executeUpdate() > 0;
     }
-}
+    }
 }
