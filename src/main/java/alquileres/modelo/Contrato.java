@@ -3,15 +3,15 @@ import java.time.LocalDate;
 
 public class Contrato {
 
-    private int id;
-    private int idPropiedad;
-    private int idInquilino;
+    private Integer id;
+    private Integer idPropiedad;
+    private Integer idInquilino;
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
     private double montoBase;
     private double deposito;
     private String archivoPdfRuta;
-    private boolean activo;
+    private Boolean activo;
     private Integer periodicidadMeses;
     private java.time.LocalDate ultimoAjuste;
 
@@ -19,7 +19,7 @@ public class Contrato {
     public Contrato() {
     }
 
-    public Contrato(int id, int idPropiedad , int idInquilino , LocalDate fechaInicio , LocalDate fechaFin , double montoBase){
+    public Contrato(Integer id, Integer idPropiedad , Integer idInquilino , LocalDate fechaInicio , LocalDate fechaFin , double montoBase){
         
         this.id=id;
         this.idPropiedad=idPropiedad;
@@ -30,16 +30,16 @@ public class Contrato {
     }
 
     // GETTERS Y SETTERS
-    public int getId() { return id; }
+    public Integer getId() { return id; }
     public void setId(int id) { this.id = id; }
 
-    public int getIdPropiedad() { return idPropiedad; }
+    public Integer getIdPropiedad() { return idPropiedad; }
 
     public void setIdPropiedad(int idPropiedad) { 
         this.idPropiedad = idPropiedad; 
     }
 
-    public int getIdInquilino() { 
+    public Integer getIdInquilino() { 
         return idInquilino; 
     }
 
@@ -87,11 +87,11 @@ public class Contrato {
         this.archivoPdfRuta = archivoPdfRuta; 
     }
 
-    public boolean isActivo() { 
+    public Boolean isActivo() { 
         return activo; 
     }
 
-    public void setActivo(boolean activo) { 
+    public void setActivo(Boolean activo) { 
         this.activo = activo; 
     }
 
