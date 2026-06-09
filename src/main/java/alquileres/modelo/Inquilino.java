@@ -6,14 +6,14 @@ public class Inquilino {
     private String telefono;
     private String email;
     private String documento;
-    private boolean activo;
+    private Boolean activo;
 
 //CONSTRUCTOR VACIO
 
 public Inquilino(){
 }
 
-public Inquilino(Integer id , String nombre, String telefono , String email, String documento , boolean activo){
+public Inquilino(Integer id , String nombre, String telefono , String email, String documento , Boolean activo){
     this.id=id;
     this.nombre=nombre;
     this.telefono=telefono;
@@ -66,7 +66,7 @@ public String getDocumento(){
 }
 
 
-public void setActivo(boolean activo){
+public void setActivo(Boolean activo){
     this.activo=activo;
 }
 
