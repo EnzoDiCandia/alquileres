@@ -3,6 +3,7 @@ package alquileres.controller;
 import alquileres.dao.SocioDAO;
 import alquileres.modelo.Socio;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.sql.SQLException;
 import java.util.List;
