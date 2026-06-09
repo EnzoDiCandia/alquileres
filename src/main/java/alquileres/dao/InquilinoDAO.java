@@ -299,4 +299,17 @@ public class InquilinoDAO {
         }
         return inquilinos;
     }
+
+    public boolean actualizarInquilino(Inquilino i) throws SQLException {
+    String sql = "UPDATE inquilino SET nombre=?, documento=?, telefono=?, email=? WHERE id=?";
+    try (Connection con = Conexion.getConexion();
+            PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, i.getNombre());
+        ps.setString(2, i.getDocumento());
+        ps.setString(3, i.getTelefono());
+        ps.setString(4, i.getEmail());
+        ps.setInt(5, i.getId());
+        return ps.executeUpdate() > 0;
+    }
+}
 }

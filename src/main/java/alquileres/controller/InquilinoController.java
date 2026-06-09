@@ -68,4 +68,10 @@ public class InquilinoController {
     public List<Inquilino> listarTodosInquilinos() throws SQLException {
         return dao.listarTodosInquilinos();
     }
+
+    @PutMapping("/{id}")
+    public boolean actualizar(@PathVariable int id, @RequestBody Inquilino i) throws SQLException {
+        i.setId(id);
+        return dao.actualizarInquilino(i);
+    }
 }
