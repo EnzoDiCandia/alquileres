@@ -1187,13 +1187,11 @@
           <table>
             <thead>
               <tr>
-                <th>#</th>
                 <th>Propiedad</th>
                 <th>Inquilino</th>
                 <th class="hide-mobile">Desde</th>
-                <th class="hide-mobile">Hasta</th>
+                <th>Hasta</th>
                 <th>Monto</th>
-                <th>Vencimiento</th>
                 <th>Próx. ajuste</th>
                 <th class="hide-mobile">Archivo</th>
                 <th>Acciones</th>
@@ -1956,7 +1954,7 @@
       <td class="hide-mobile">${c.fechaInicio}</td>
       <td class="hide-mobile">${c.fechaFin}</td>
       <td class="mono">${formatPeso(c.montoBase)}</td>
-      <td>${badgeVencimiento(c)}</td>
+      <td>${badgeHasta(c)}</td>
       <td>${badgeAjuste(c)}</td>
       <td class="hide-mobile">${c.archivoPdfRuta
               ? `<a href="${c.archivoPdfRuta}" target="_blank" class="btn btn-secondary" style="padding:3px 10px;font-size:12px">📄 Ver</a>
@@ -2002,6 +2000,17 @@
       document.getElementById('edit-cont-monto').value = c.montoBase;
       document.getElementById('edit-cont-deposito').value = c.deposito;
       openModal('modal-editar-contrato');
+    }
+
+    function badgeHasta(c) {
+      if (!c.fechaFin) return '—';
+      const hoy = new Date(); hoy.setHours(0,0,0,0);
+      const venc = new Date(c.fechaFin);
+      const dias = Math.ceil((venc - hoy) / 86400000);
+      const fecha = c.fechaFin;
+      if (dias < 0) return `<span style="background:var(--danger-light);color:var(--danger);padding:3px 8px;border-radius:6px;font-size:12px;font-weight:600">⛔ ${fecha}</span>`;
+      if (dias <= 60) return `<span style="background:var(--warning-light);color:var(--warning);padding:3px 8px;border-radius:6px;font-size:12px;font-weight:600">⚠ ${fecha}</span>`;
+      return `<span style="font-size:13px">${fecha}</span>`;
     }
 
     async function guardarEdicionContrato() {
