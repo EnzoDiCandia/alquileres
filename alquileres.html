@@ -1942,9 +1942,10 @@
       if (dias <= 60) return `<span class="badge badge-yellow">⚠ ${fecha}</span>`;
       return `<span class="badge badge-green">${fecha}</span>`;
     }
-
+    
     async function cargarContratos() {
       const data = await fetch(`${API}/contratos`).then(r => r.json());
+      contratos = data;
       const tbody = document.getElementById('tabla-contratos');
       if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No hay contratos activos</td></tr>'; return; }
       tbody.innerHTML = data.map(c => `<tr>
@@ -1968,7 +1969,6 @@
             : `<button class="btn btn-success" onclick="activarContrato(${c.id})">Activar</button>`}
       </td>
       </tr>`).join('');
-        contratos = data;
         await cargarAlertasAjuste();
     }
 
