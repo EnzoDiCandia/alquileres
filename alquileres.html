@@ -1190,11 +1190,12 @@
                 <th>#</th>
                 <th>Propiedad</th>
                 <th>Inquilino</th>
-                <th>Desde</th>
-                <th>Hasta</th>
+                <th class="hide-mobile">Desde</th>
+                <th class="hide-mobile">Hasta</th>
                 <th>Monto</th>
-                <th>Próximo ajuste</th>
-                <th>Archivo</th>
+                <th>Vencimiento</th>
+                <th>Próx. ajuste</th>
+                <th class="hide-mobile">Archivo</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -1933,31 +1934,44 @@
       return `<span class="badge badge-green" style="cursor:pointer" onclick="abrirAjuste(${c.id})">${fecha}</span>`;
     }
 
+    function badgeVencimiento(c) {
+      if (!c.fechaFin) return '—';
+      const hoy = new Date(); hoy.setHours(0,0,0,0);
+      const venc = new Date(c.fechaFin);
+      const dias = Math.ceil((venc - hoy) / 86400000);
+      const fecha = venc.toLocaleDateString('es-AR', { day:'2-digit', month:'short', year:'numeric' });
+      if (dias < 0) return `<span class="badge badge-red">⛔ ${fecha}</span>`;
+      if (dias <= 60) return `<span class="badge badge-yellow">⚠ ${fecha}</span>`;
+      return `<span class="badge badge-green">${fecha}</span>`;
+    }
+
     async function cargarContratos() {
       const data = await fetch(`${API}/contratos`).then(r => r.json());
       const tbody = document.getElementById('tabla-contratos');
       if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">No hay contratos activos</td></tr>'; return; }
       tbody.innerHTML = data.map(c => `<tr>
-    <td>#${c.id}</td>
-    <td>${nombrePropiedad(c.idPropiedad)}</td>
-    <td>${nombreInquilino(c.idInquilino)}</td>
-    <td>${c.fechaInicio}</td><td>${c.fechaFin}</td>
-    <td class="mono">${formatPeso(c.montoBase)}</td>
-    <td>${badgeAjuste(c)}</td>
-    <td>${c.archivoPdfRuta
-          ? `<a href="${c.archivoPdfRuta}" target="_blank" class="btn btn-secondary" style="padding:3px 10px;font-size:12px">📄 Ver</a>
-         <button class="btn btn-danger" style="padding:3px 8px;font-size:12px" onclick="eliminarArchivo(${c.id})">✕</button>`
-          : `<label class="btn btn-secondary" style="padding:3px 10px;font-size:12px;cursor:pointer">
-           📎 Subir<input type="file" style="display:none" accept=".doc,.docx,.pdf" onchange="subirArchivo(${c.id}, this)">
-         </label>`
-        }</td>
-    <td>
-      <button class="btn btn-secondary" style="font-size:12px;padding:4px 10px" onclick="abrirEditarContrato(${c.id})">Editar</button>
-      ${c.activo
-          ? `<button class="btn btn-danger" onclick="desactivarContrato(${c.id})">Desactivar</button>`
-          : `<button class="btn btn-success" onclick="activarContrato(${c.id})">Activar</button>`}
-    </td>
-  </tr>`).join('');
+      <td>#${c.id}</td>
+      <td>${nombrePropiedad(c.idPropiedad)}</td>
+      <td>${nombreInquilino(c.idInquilino)}</td>
+      <td class="hide-mobile">${c.fechaInicio}</td>
+      <td class="hide-mobile">${c.fechaFin}</td>
+      <td class="mono">${formatPeso(c.montoBase)}</td>
+      <td>${badgeVencimiento(c)}</td>
+      <td>${badgeAjuste(c)}</td>
+      <td class="hide-mobile">${c.archivoPdfRuta
+              ? `<a href="${c.archivoPdfRuta}" target="_blank" class="btn btn-secondary" style="padding:3px 10px;font-size:12px">📄 Ver</a>
+          <button class="btn btn-danger" style="padding:3px 8px;font-size:12px" onclick="eliminarArchivo(${c.id})">✕</button>`
+              : `<label class="btn btn-secondary" style="padding:3px 10px;font-size:12px;cursor:pointer">
+            📎 Subir<input type="file" style="display:none" accept=".doc,.docx,.pdf" onchange="subirArchivo(${c.id}, this)">
+          </label>`
+            }</td>
+      <td>
+        <button class="btn btn-secondary" style="font-size:12px;padding:4px 10px" onclick="abrirEditarContrato(${c.id})">Editar</button>
+        ${c.activo
+              ? `<button class="btn btn-danger" onclick="desactivarContrato(${c.id})">Desactivar</button>`
+              : `<button class="btn btn-success" onclick="activarContrato(${c.id})">Activar</button>`}
+      </td>
+      </tr>`).join('');
       contratos = data;
       await cargarAlertasAjuste();
     }
