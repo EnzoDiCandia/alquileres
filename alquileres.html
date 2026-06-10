@@ -1948,7 +1948,6 @@
       const tbody = document.getElementById('tabla-contratos');
       if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">No hay contratos activos</td></tr>'; return; }
       tbody.innerHTML = data.map(c => `<tr>
-      <td>#${c.id}</td>
       <td>${nombrePropiedad(c.idPropiedad)}</td>
       <td>${nombreInquilino(c.idInquilino)}</td>
       <td class="hide-mobile">${c.fechaInicio}</td>
