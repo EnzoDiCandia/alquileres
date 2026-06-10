@@ -77,7 +77,8 @@ public class ContratoController {
         return dao.actualizarPeriodicidad(id, periodicidadMeses, ultimoAjuste);
     }
 
-    // ─── SUBIR ARCHIVO A SUPABASE ─────────────────────────────────────────────────
+    // ─── SUBIR ARCHIVO A SUPABASE
+    // ─────────────────────────────────────────────────
 
     @PostMapping("/{id}/upload")
     public Map<String, Object> subirArchivo(
@@ -109,5 +110,16 @@ public class ContratoController {
             e.printStackTrace();
             return Map.of("ok", false, "mensaje", e.getMessage());
         }
+    }
+
+    @PutMapping("/{id}/activar")
+    public boolean activar(@PathVariable int id) throws SQLException {
+        return dao.activarContrato(id);
+    }
+
+    @PutMapping("/{id}")
+    public boolean actualizar(@PathVariable int id, @RequestBody Contrato c) throws SQLException {
+        c.setId(id);
+        return dao.actualizarContrato(c);
     }
 }

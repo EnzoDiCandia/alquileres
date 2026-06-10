@@ -213,12 +213,36 @@ public class ContratoDAO {
     }
 
     public boolean actualizarRutaPdf(int id, String ruta) throws SQLException {
-    String sql = "UPDATE contrato SET archivo_pdf_ruta=? WHERE id=?";
-    try (Connection con = Conexion.getConexion();
-            PreparedStatement ps = con.prepareStatement(sql)) {
-        ps.setString(1, ruta);
-        ps.setInt(2, id);
-        return ps.executeUpdate() > 0;
+        String sql = "UPDATE contrato SET archivo_pdf_ruta=? WHERE id=?";
+        try (Connection con = Conexion.getConexion();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, ruta);
+            ps.setInt(2, id);
+            return ps.executeUpdate() > 0;
+        }
     }
-}
+
+    public boolean activarContrato(int id) throws SQLException {
+        String sql = "UPDATE contrato SET activo=true WHERE id=?";
+        try (Connection con = Conexion.getConexion();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public boolean actualizarContrato(Contrato c) throws SQLException {
+        String sql = "UPDATE contrato SET id_propiedad=?, id_inquilino=?, fecha_inicio=?, fecha_fin=?, monto_base=?, deposito=? WHERE id=?";
+        try (Connection con = Conexion.getConexion();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, c.getIdPropiedad());
+            ps.setInt(2, c.getIdInquilino());
+            ps.setDate(3, java.sql.Date.valueOf(c.getFechaInicio()));
+            ps.setDate(4, java.sql.Date.valueOf(c.getFechaFin()));
+            ps.setDouble(5, c.getMontoBase());
+            ps.setDouble(6, c.getDeposito());
+            ps.setInt(7, c.getId());
+            return ps.executeUpdate() > 0;
+        }
+    }
 }
