@@ -1,816 +1,1686 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema de Alquileres</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  :root {
-    --bg: #f5f4f0; --surface: #ffffff; --border: #e2e0d8;
-    --text: #1a1a1a; --text-soft: #6b6860;
-    --accent: #2d5a27; --accent-light: #e8f0e7;
-    --danger: #c0392b; --danger-light: #fdf0ef;
-    --warning: #c47d00; --warning-light: #fdf6e3;
-  }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
-  html { overflow-x: hidden; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Alquileres</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-  /* LOGIN */
-  #login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
-  .login-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 40px 32px; width: 100%; max-width: 380px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
-  .login-box h1 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
-  .login-box > p { color: var(--text-soft); font-size: 14px; margin-bottom: 28px; }
+    :root {
+      --bg: #f5f4f0;
+      --surface: #ffffff;
+      --border: #e2e0d8;
+      --text: #1a1a1a;
+      --text-soft: #6b6860;
+      --accent: #2d5a27;
+      --accent-light: #e8f0e7;
+      --danger: #c0392b;
+      --danger-light: #fdf0ef;
+      --warning: #c47d00;
+      --warning-light: #fdf6e3;
+    }
 
-  .field { margin-bottom: 14px; }
-  .field label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--text-soft); }
-  .field input, .field select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--bg); color: var(--text); outline: none; transition: border-color 0.2s; }
-  .field input:focus, .field select:focus { border-color: var(--accent); background: white; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; white-space: nowrap; }
-  .btn-primary { background: var(--accent); color: white; justify-content: center; }
-  .btn-primary:hover { background: #234820; }
-  .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
-  .btn-secondary:hover { background: var(--border); }
-  .btn-danger { background: var(--danger-light); color: var(--danger); border: 1px solid #f0c8c5; font-size: 12px; padding: 6px 12px; }
-  .btn-danger:hover { background: #fbe0de; }
-  .btn-success { background: var(--accent-light); color: var(--accent); border: 1px solid #c5dfc3; font-size: 12px; padding: 6px 12px; }
-  .btn-success:hover { background: #d5e8d3; }
-  .btn-login { width: 100%; justify-content: center; padding: 12px; font-size: 15px; margin-top: 8px; }
-  .error-msg { color: var(--danger); font-size: 13px; margin-top: 10px; text-align: center; display: none; }
+    html {
+      overflow-x: hidden;
+    }
 
-  /* NAV */
-  #app { display: none; }
-  nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 16px; display: flex; align-items: center; height: 56px; position: sticky; top: 0; z-index: 100; gap: 2px; }
-  .nav-brand { font-weight: 600; font-size: 14px; margin-right: 12px; color: var(--accent); white-space: nowrap; flex-shrink: 0; }
-  .nav-links { display: flex; align-items: center; gap: 2px; overflow-x: auto; flex: 1; }
-  .nav-links::-webkit-scrollbar { display: none; }
-  .nav-link { padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; color: var(--text-soft); transition: all 0.15s; white-space: nowrap; flex-shrink: 0; }
-  .nav-link:hover { background: var(--bg); color: var(--text); }
-  .nav-link.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
-  .nav-spacer { flex: 1; min-width: 8px; }
-  .nav-user { font-size: 12px; color: var(--text-soft); white-space: nowrap; flex-shrink: 0; }
-  .nav-user span { font-weight: 500; color: var(--text); }
-  .btn-logout { padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--text-soft); font-family: 'DM Sans', sans-serif; transition: all 0.15s; white-space: nowrap; flex-shrink: 0; margin-left: 8px; }
-  .btn-logout:hover { background: var(--danger-light); color: var(--danger); border-color: #f0c8c5; }
+    /* LOGIN */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
 
-  /* HAMBURGER */
-  .nav-hamburger { display: none; flex-direction: column; gap: 4px; cursor: pointer; padding: 8px; border-radius: 6px; margin-left: auto; flex-shrink: 0; }
-  .nav-hamburger span { display: block; width: 20px; height: 2px; background: var(--text-soft); border-radius: 2px; transition: all 0.2s; }
-  .nav-hamburger:hover span { background: var(--text); }
-  .nav-mobile-menu { display: none; position: fixed; top: 56px; left: 0; right: 0; background: var(--surface); border-bottom: 1px solid var(--border); z-index: 99; padding: 8px 12px 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
-  .nav-mobile-menu.open { display: block; }
-  .nav-mobile-menu .nav-link { display: block; padding: 10px 12px; border-radius: 8px; font-size: 14px; margin-bottom: 2px; }
-  .nav-mobile-bottom { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px 0; border-top: 1px solid var(--border); margin-top: 8px; }
+    .login-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 32px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    }
 
-  @media (max-width: 640px) {
-    .nav-links { display: none; }
-    .nav-user { display: none; }
-    .btn-logout { display: none; }
-    .nav-hamburger { display: flex; }
-  }
+    .login-box h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
 
-  /* MAIN */
-  main { max-width: 1200px; margin: 0 auto; padding: 20px 16px; }
-  .section { display: none; }
-  .section.active { display: block; }
-  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
-  .section-header h2 { font-size: 18px; font-weight: 600; }
+    .login-box>p {
+      color: var(--text-soft);
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
 
-  /* CARDS */
-  .cards-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
-  @media (max-width: 640px) { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
-  .card-label { font-size: 11px; font-weight: 500; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-  .card-value { font-size: 20px; font-weight: 600; font-family: 'DM Mono', monospace; }
-  .card-value.green { color: var(--accent); }
-  .card-value.red { color: var(--danger); }
-  .card-value.orange { color: var(--warning); }
+    .field {
+      margin-bottom: 14px;
+    }
 
-  /* MONTH SELECTOR */
-  .month-selector { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .month-selector select, .month-selector input { padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--surface); color: var(--text); outline: none; }
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--text-soft);
+    }
 
-  /* FILTRO BAR */
-  .filtro-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; flex-wrap: wrap; }
-  .filtro-bar label { font-size: 12px; font-weight: 500; color: var(--text-soft); white-space: nowrap; }
-  .filtro-bar select { padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--bg); color: var(--text); outline: none; }
-  .filtro-bar input[type=number] { padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--bg); color: var(--text); outline: none; width: 76px; }
-  .filtro-sep { width: 1px; height: 20px; background: var(--border); }
-  .filtro-group { display: flex; align-items: center; gap: 6px; }
-  @media (max-width: 500px) {
-    .filtro-sep { display: none; }
-    .filtro-bar { gap: 6px 10px; }
-    .filtro-group { flex-wrap: wrap; }
-    .filtro-bar select, .filtro-bar input[type=number] { font-size: 14px; padding: 8px 10px; }
-  }
+    .field input,
+    .field select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
 
-  /* TABLE */
-  .table-wrapper { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 400px; }
-  thead th { padding: 10px 12px; text-align: left; font-size: 10px; font-weight: 500; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.5px; background: var(--bg); border-bottom: 1px solid var(--border); white-space: nowrap; }
-  tbody td { padding: 11px 12px; border-bottom: 1px solid var(--border); }
-  tbody tr:last-child td { border-bottom: none; }
-  tbody tr:hover { background: #fafaf8; }
-  @media (max-width: 640px) {
-    table { font-size: 12px; }
-    thead th { padding: 8px 8px; font-size: 9px; }
-    tbody td { padding: 9px 8px; }
-    /* Tablas simples de 3 col en resumen: sin min-width, sin scroll */
-    .resumen-grid .table-wrapper { overflow-x: hidden; }
-    .resumen-grid table { min-width: unset; }
-    /* Tabla estado de pagos (5 col en mobile): necesita min-width moderado */
-    #section-resumen > .table-wrapper { overflow-x: auto; }
-    #section-resumen > .table-wrapper table { min-width: 360px; }
-    #section-resumen > .table-wrapper .mono { font-size: 11px; }
-    #section-resumen > .table-wrapper .badge { font-size: 10px; padding: 2px 6px; }
-  }
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--accent);
+      background: white;
+    }
 
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
-  .badge-green { background: var(--accent-light); color: var(--accent); }
-  .badge-red { background: var(--danger-light); color: var(--danger); }
-  .badge-yellow { background: var(--warning-light); color: var(--warning); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
 
-  /* MODAL */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: none; align-items: flex-end; justify-content: center; z-index: 200; padding: 0; }
-  @media (min-width: 600px) { .modal-overlay { align-items: center; padding: 16px; } }
-  .modal-overlay.open { display: flex; }
-  .modal { background: var(--surface); border-radius: 16px 16px 0 0; padding: 28px 20px; width: 100%; box-shadow: 0 -4px 40px rgba(0,0,0,0.12); max-height: 92vh; overflow-y: auto; }
-  @media (min-width: 600px) { .modal { border-radius: 16px; width: 460px; max-height: 90vh; } }
-  .modal h3 { font-size: 17px; font-weight: 600; margin-bottom: 20px; }
-  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      justify-content: center;
+    }
 
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn-primary:hover {
+      background: #234820;
+    }
 
-  /* RESUMEN */
-  .section-subtitle { font-size: 14px; font-weight: 600; margin-bottom: 12px; margin-top: 24px; }
-  .resumen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
-  @media (max-width: 640px) { .resumen-grid { grid-template-columns: 1fr; } }
-  .resumen-socios { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 20px; }
-  @media (max-width: 640px) { .resumen-socios { grid-template-columns: 1fr; } }
-  .resumen-socios .card table { min-width: unset; width: 100%; }
-  .resumen-socios .card { min-width: 0; overflow: hidden; }
+    .btn-secondary {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
 
-  /* TABS */
-  .tab-group { display: flex; gap: 4px; margin-bottom: 16px; background: var(--bg); padding: 4px; border-radius: 10px; width: fit-content; }
-  .tab { padding: 6px 14px; border-radius: 7px; font-size: 13px; cursor: pointer; color: var(--text-soft); font-weight: 500; transition: all 0.15s; }
-  .tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .btn-secondary:hover {
+      background: var(--border);
+    }
 
-  .empty { text-align: center; padding: 28px; color: var(--text-soft); font-size: 13px; }
-  .mono { font-family: 'DM Mono', monospace; }
-  .action-btns { display: flex; gap: 6px; }
-  .adeuda { color: var(--danger); font-weight: 600; }
-  .pagado { color: var(--accent); font-weight: 600; }
-  @media (max-width: 640px) { .hide-mobile { display: none; } }
+    .btn-danger {
+      background: var(--danger-light);
+      color: var(--danger);
+      border: 1px solid #f0c8c5;
+      font-size: 12px;
+      padding: 6px 12px;
+    }
 
-  /* RESPONSIVE EXTRAS */
-  @media (max-width: 640px) {
-    main { padding: 12px 10px; }
-    .section-header { gap: 8px; }
-    .section-header h2 { font-size: 16px; }
-    .month-selector { gap: 6px; }
-    .month-selector select, .month-selector input { font-size: 14px; padding: 8px 10px; }
-    .cards-grid { gap: 8px; }
-    .card { padding: 12px; }
-    .card-value { font-size: 17px; }
-    .tab-group { width: 100%; justify-content: stretch; }
-    .tab { flex: 1; text-align: center; font-size: 12px; padding: 6px 8px; }
-    .btn { font-size: 12px; padding: 7px 12px; }
-    tbody td { padding: 10px 8px; font-size: 12px; }
-    thead th { padding: 8px; font-size: 9px; }
-    .resumen-grid { gap: 10px; }
-    .resumen-socios { gap: 8px; }
-    .section-subtitle { font-size: 13px; margin-top: 16px; }
-  }
-</style>
+    .btn-danger:hover {
+      background: #fbe0de;
+    }
+
+    .btn-success {
+      background: var(--accent-light);
+      color: var(--accent);
+      border: 1px solid #c5dfc3;
+      font-size: 12px;
+      padding: 6px 12px;
+    }
+
+    .btn-success:hover {
+      background: #d5e8d3;
+    }
+
+    .btn-login {
+      width: 100%;
+      justify-content: center;
+      padding: 12px;
+      font-size: 15px;
+      margin-top: 8px;
+    }
+
+    .error-msg {
+      color: var(--danger);
+      font-size: 13px;
+      margin-top: 10px;
+      text-align: center;
+      display: none;
+    }
+
+    /* NAV */
+    #app {
+      display: none;
+    }
+
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: 2px;
+    }
+
+    .nav-brand {
+      font-weight: 600;
+      font-size: 14px;
+      margin-right: 12px;
+      color: var(--accent);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      overflow-x: auto;
+      flex: 1;
+    }
+
+    .nav-links::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-link {
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--text-soft);
+      transition: all 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .nav-link:hover {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .nav-link.active {
+      background: var(--accent-light);
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .nav-spacer {
+      flex: 1;
+      min-width: 8px;
+    }
+
+    .nav-user {
+      font-size: 12px;
+      color: var(--text-soft);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .nav-user span {
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .btn-logout {
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-soft);
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+
+    .btn-logout:hover {
+      background: var(--danger-light);
+      color: var(--danger);
+      border-color: #f0c8c5;
+    }
+
+    /* HAMBURGER */
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 6px;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .nav-hamburger span {
+      display: block;
+      width: 20px;
+      height: 2px;
+      background: var(--text-soft);
+      border-radius: 2px;
+      transition: all 0.2s;
+    }
+
+    .nav-hamburger:hover span {
+      background: var(--text);
+    }
+
+    .nav-mobile-menu {
+      display: none;
+      position: fixed;
+      top: 56px;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      z-index: 99;
+      padding: 8px 12px 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .nav-mobile-menu.open {
+      display: block;
+    }
+
+    .nav-mobile-menu .nav-link {
+      display: block;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    .nav-mobile-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px 0;
+      border-top: 1px solid var(--border);
+      margin-top: 8px;
+    }
+
+    @media (max-width: 640px) {
+      .nav-links {
+        display: none;
+      }
+
+      .nav-user {
+        display: none;
+      }
+
+      .btn-logout {
+        display: none;
+      }
+
+      .nav-hamburger {
+        display: flex;
+      }
+    }
+
+    /* MAIN */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px 16px;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .section-header h2 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    /* CARDS */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 640px) {
+      .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .card-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .card-value {
+      font-size: 20px;
+      font-weight: 600;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .card-value.green {
+      color: var(--accent);
+    }
+
+    .card-value.red {
+      color: var(--danger);
+    }
+
+    .card-value.orange {
+      color: var(--warning);
+    }
+
+    /* MONTH SELECTOR */
+    .month-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .month-selector select,
+    .month-selector input {
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+    }
+
+    /* FILTRO BAR */
+    .filtro-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      flex-wrap: wrap;
+    }
+
+    .filtro-bar label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-soft);
+      white-space: nowrap;
+    }
+
+    .filtro-bar select {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+    }
+
+    .filtro-bar input[type=number] {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      width: 76px;
+    }
+
+    .filtro-sep {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+    }
+
+    .filtro-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    @media (max-width: 500px) {
+      .filtro-sep {
+        display: none;
+      }
+
+      .filtro-bar {
+        gap: 6px 10px;
+      }
+
+      .filtro-group {
+        flex-wrap: wrap;
+      }
+
+      .filtro-bar select,
+      .filtro-bar input[type=number] {
+        font-size: 14px;
+        padding: 8px 10px;
+      }
+    }
+
+    /* TABLE */
+    .table-wrapper {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 400px;
+    }
+
+    thead th {
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tbody td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background: #fafaf8;
+    }
+
+    @media (max-width: 640px) {
+      table {
+        font-size: 12px;
+      }
+
+      thead th {
+        padding: 8px 8px;
+        font-size: 9px;
+      }
+
+      tbody td {
+        padding: 9px 8px;
+      }
+
+      /* Tablas simples de 3 col en resumen: sin min-width, sin scroll */
+      .resumen-grid .table-wrapper {
+        overflow-x: hidden;
+      }
+
+      .resumen-grid table {
+        min-width: unset;
+      }
+
+      /* Tabla estado de pagos (5 col en mobile): necesita min-width moderado */
+      #section-resumen>.table-wrapper {
+        overflow-x: auto;
+      }
+
+      #section-resumen>.table-wrapper table {
+        min-width: 360px;
+      }
+
+      #section-resumen>.table-wrapper .mono {
+        font-size: 11px;
+      }
+
+      #section-resumen>.table-wrapper .badge {
+        font-size: 10px;
+        padding: 2px 6px;
+      }
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .badge-green {
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+
+    .badge-red {
+      background: var(--danger-light);
+      color: var(--danger);
+    }
+
+    .badge-yellow {
+      background: var(--warning-light);
+      color: var(--warning);
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 200;
+      padding: 0;
+    }
+
+    @media (min-width: 600px) {
+      .modal-overlay {
+        align-items: center;
+        padding: 16px;
+      }
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--surface);
+      border-radius: 16px 16px 0 0;
+      padding: 28px 20px;
+      width: 100%;
+      box-shadow: 0 -4px 40px rgba(0, 0, 0, 0.12);
+      max-height: 92vh;
+      overflow-y: auto;
+    }
+
+    @media (min-width: 600px) {
+      .modal {
+        border-radius: 16px;
+        width: 460px;
+        max-height: 90vh;
+      }
+    }
+
+    .modal h3 {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* RESUMEN */
+    .section-subtitle {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      margin-top: 24px;
+    }
+
+    .resumen-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 640px) {
+      .resumen-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .resumen-socios {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 640px) {
+      .resumen-socios {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .resumen-socios .card table {
+      min-width: unset;
+      width: 100%;
+    }
+
+    .resumen-socios .card {
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    /* TABS */
+    .tab-group {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+      background: var(--bg);
+      padding: 4px;
+      border-radius: 10px;
+      width: fit-content;
+    }
+
+    .tab {
+      padding: 6px 14px;
+      border-radius: 7px;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text-soft);
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+
+    .tab.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .empty {
+      text-align: center;
+      padding: 28px;
+      color: var(--text-soft);
+      font-size: 13px;
+    }
+
+    .mono {
+      font-family: 'DM Mono', monospace;
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .adeuda {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .pagado {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    @media (max-width: 640px) {
+      .hide-mobile {
+        display: none;
+      }
+    }
+
+    /* RESPONSIVE EXTRAS */
+    @media (max-width: 640px) {
+      main {
+        padding: 12px 10px;
+      }
+
+      .section-header {
+        gap: 8px;
+      }
+
+      .section-header h2 {
+        font-size: 16px;
+      }
+
+      .month-selector {
+        gap: 6px;
+      }
+
+      .month-selector select,
+      .month-selector input {
+        font-size: 14px;
+        padding: 8px 10px;
+      }
+
+      .cards-grid {
+        gap: 8px;
+      }
+
+      .card {
+        padding: 12px;
+      }
+
+      .card-value {
+        font-size: 17px;
+      }
+
+      .tab-group {
+        width: 100%;
+        justify-content: stretch;
+      }
+
+      .tab {
+        flex: 1;
+        text-align: center;
+        font-size: 12px;
+        padding: 6px 8px;
+      }
+
+      .btn {
+        font-size: 12px;
+        padding: 7px 12px;
+      }
+
+      tbody td {
+        padding: 10px 8px;
+        font-size: 12px;
+      }
+
+      thead th {
+        padding: 8px;
+        font-size: 9px;
+      }
+
+      .resumen-grid {
+        gap: 10px;
+      }
+
+      .resumen-socios {
+        gap: 8px;
+      }
+
+      .section-subtitle {
+        font-size: 13px;
+        margin-top: 16px;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<div id="login-screen">
-  <div class="login-box">
-    <h1>🏠 Sistema de Alquileres</h1>
-    <p>Ingresá con tu usuario y contraseña</p>
-    <div class="field"><label>Usuario</label><input type="text" id="login-nombre" placeholder="Ej: carlos" autocomplete="username"></div>
-    <div class="field"><label>Contraseña</label><input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') login()"></div>
-    <button class="btn btn-primary btn-login" onclick="login()">Ingresar</button>
-    <p class="error-msg" id="login-error">Usuario o contraseña incorrectos</p>
+  <div id="login-screen">
+    <div class="login-box">
+      <h1>🏠 Sistema de Alquileres</h1>
+      <p>Ingresá con tu usuario y contraseña</p>
+      <div class="field"><label>Usuario</label><input type="text" id="login-nombre" placeholder="Ej: carlos"
+          autocomplete="username"></div>
+      <div class="field"><label>Contraseña</label><input type="password" id="login-password" placeholder="••••••••"
+          autocomplete="current-password" onkeydown="if(event.key==='Enter') login()"></div>
+      <button class="btn btn-primary btn-login" onclick="login()">Ingresar</button>
+      <p class="error-msg" id="login-error">Usuario o contraseña incorrectos</p>
+    </div>
   </div>
-</div>
 
-<div id="app">
-  <nav>
-    <div class="nav-brand">🏠 Alquileres</div>
-    <div class="nav-links">
-      <div class="nav-link active" onclick="showSection('resumen', this); closeMobileMenu()">Resumen</div>
+  <div id="app">
+    <nav>
+      <div class="nav-brand">🏠 Alquileres</div>
+      <div class="nav-links">
+        <div class="nav-link active" onclick="showSection('resumen', this); closeMobileMenu()">Resumen</div>
+        <div class="nav-link" onclick="showSection('pagos', this); closeMobileMenu()">Pagos</div>
+        <div class="nav-link" onclick="showSection('gastos', this); closeMobileMenu()">Gastos</div>
+        <div class="nav-link" onclick="showSection('retiros', this); closeMobileMenu()">Retiros</div>
+        <div class="nav-link" onclick="showSection('contratos', this); closeMobileMenu()">Contratos</div>
+        <div class="nav-link" onclick="showSection('propiedades', this); closeMobileMenu()">Propiedades</div>
+        <div class="nav-link" onclick="showSection('inquilinos', this); closeMobileMenu()">Inquilinos</div>
+      </div>
+      <div class="nav-spacer"></div>
+      <div class="nav-user">Hola, <span id="nav-nombre"></span></div>
+      <button class="btn-logout" onclick="logout()">Salir</button>
+      <div class="nav-hamburger" onclick="toggleMobileMenu()" id="nav-hamburger">
+        <span></span><span></span><span></span>
+      </div>
+    </nav>
+    <div class="nav-mobile-menu" id="nav-mobile-menu">
+      <div class="nav-link" onclick="showSection('resumen', this); closeMobileMenu()">Resumen</div>
       <div class="nav-link" onclick="showSection('pagos', this); closeMobileMenu()">Pagos</div>
       <div class="nav-link" onclick="showSection('gastos', this); closeMobileMenu()">Gastos</div>
       <div class="nav-link" onclick="showSection('retiros', this); closeMobileMenu()">Retiros</div>
       <div class="nav-link" onclick="showSection('contratos', this); closeMobileMenu()">Contratos</div>
       <div class="nav-link" onclick="showSection('propiedades', this); closeMobileMenu()">Propiedades</div>
       <div class="nav-link" onclick="showSection('inquilinos', this); closeMobileMenu()">Inquilinos</div>
-    </div>
-    <div class="nav-spacer"></div>
-    <div class="nav-user">Hola, <span id="nav-nombre"></span></div>
-    <button class="btn-logout" onclick="logout()">Salir</button>
-    <div class="nav-hamburger" onclick="toggleMobileMenu()" id="nav-hamburger">
-      <span></span><span></span><span></span>
-    </div>
-  </nav>
-  <div class="nav-mobile-menu" id="nav-mobile-menu">
-    <div class="nav-link" onclick="showSection('resumen', this); closeMobileMenu()">Resumen</div>
-    <div class="nav-link" onclick="showSection('pagos', this); closeMobileMenu()">Pagos</div>
-    <div class="nav-link" onclick="showSection('gastos', this); closeMobileMenu()">Gastos</div>
-    <div class="nav-link" onclick="showSection('retiros', this); closeMobileMenu()">Retiros</div>
-    <div class="nav-link" onclick="showSection('contratos', this); closeMobileMenu()">Contratos</div>
-    <div class="nav-link" onclick="showSection('propiedades', this); closeMobileMenu()">Propiedades</div>
-    <div class="nav-link" onclick="showSection('inquilinos', this); closeMobileMenu()">Inquilinos</div>
-    <div class="nav-mobile-bottom">
-      <span style="font-size:13px;color:var(--text-soft)">Hola, <strong id="nav-nombre-mobile"></strong></span>
-      <button class="btn-logout" onclick="logout()">Salir</button>
-    </div>
-  </div>
-
-  <main>
-
-    <!-- RESUMEN -->
-    <!-- PANEL DE ALERTAS DE AJUSTE -->
-    <div id="panel-alertas" style="display:none; margin:16px 16px 0 16px;"></div>
-
-    <div class="section active" id="section-resumen">
-      <div class="section-header">
-        <h2>Resumen del mes</h2>
-        <div class="month-selector">
-          <select id="resumen-mes">
-            <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
-            <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
-            <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
-            <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
-          </select>
-          <input type="number" id="resumen-anio" min="2020" max="2030" style="width:82px">
-          <button class="btn btn-secondary" onclick="cargarResumen()">Ver</button>
-        </div>
+      <div class="nav-mobile-bottom">
+        <span style="font-size:13px;color:var(--text-soft)">Hola, <strong id="nav-nombre-mobile"></strong></span>
+        <button class="btn-logout" onclick="logout()">Salir</button>
       </div>
-      <div class="cards-grid">
-        <div class="card"><div class="card-label">Ingresos</div><div class="card-value green" id="card-ingresos">—</div></div>
-        <div class="card"><div class="card-label">Retiros</div><div class="card-value red" id="card-retiros">—</div></div>
-        <div class="card"><div class="card-label">Gastos</div><div class="card-value orange" id="card-gastos">—</div></div>
-        <div class="card"><div class="card-label">Saldo</div><div class="card-value" id="card-saldo">—</div></div>
-      </div>
-      <div class="section-subtitle">Estado de pagos</div>
-      <div class="table-wrapper">
-        <table id="tabla-estado-pagos-wrapper">
-          <thead><tr>
-            <th>Inquilino</th>
-            <th class="hide-mobile">Propiedad</th>
-            <th>A pagar</th>
-            <th>Pagado</th>
-            <th>Adeuda</th>
-            <th>Estado</th>
-          </tr></thead>
-          <tbody id="tabla-estado-pagos"></tbody>
-        </table>
-      </div>
-      <div class="resumen-grid">
-        <div>
-          <div class="section-subtitle">Gastos del mes</div>
-          <div class="table-wrapper">
-            <table>
-              <thead><tr><th>Fecha</th><th>Concepto</th><th>Monto</th></tr></thead>
-              <tbody id="tabla-gastos-resumen"></tbody>
-            </table>
+    </div>
+
+    <main>
+
+      <!-- RESUMEN -->
+      <!-- PANEL DE ALERTAS DE AJUSTE -->
+      <div id="panel-alertas" style="display:none; margin:16px 16px 0 16px;"></div>
+
+      <div class="section active" id="section-resumen">
+        <div class="section-header">
+          <h2>Resumen del mes</h2>
+          <div class="month-selector">
+            <select id="resumen-mes">
+              <option value="1">Enero</option>
+              <option value="2">Febrero</option>
+              <option value="3">Marzo</option>
+              <option value="4">Abril</option>
+              <option value="5">Mayo</option>
+              <option value="6">Junio</option>
+              <option value="7">Julio</option>
+              <option value="8">Agosto</option>
+              <option value="9">Septiembre</option>
+              <option value="10">Octubre</option>
+              <option value="11">Noviembre</option>
+              <option value="12">Diciembre</option>
+            </select>
+            <input type="number" id="resumen-anio" min="2020" max="2030" style="width:82px">
+            <button class="btn btn-secondary" onclick="cargarResumen()">Ver</button>
           </div>
         </div>
-        <div>
-          <div class="section-subtitle">Retiros del mes</div>
-          <div class="table-wrapper">
-            <table>
-              <thead><tr><th>Socio</th><th>Fecha</th><th>Monto</th></tr></thead>
-              <tbody id="tabla-retiros-resumen"></tbody>
-            </table>
+        <div class="cards-grid">
+          <div class="card">
+            <div class="card-label">Ingresos</div>
+            <div class="card-value green" id="card-ingresos">—</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Retiros</div>
+            <div class="card-value red" id="card-retiros">—</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Gastos</div>
+            <div class="card-value orange" id="card-gastos">—</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Saldo</div>
+            <div class="card-value" id="card-saldo">—</div>
           </div>
         </div>
+        <div class="section-subtitle">Estado de pagos</div>
+        <div class="table-wrapper">
+          <table id="tabla-estado-pagos-wrapper">
+            <thead>
+              <tr>
+                <th>Inquilino</th>
+                <th class="hide-mobile">Propiedad</th>
+                <th>A pagar</th>
+                <th>Pagado</th>
+                <th>Adeuda</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-estado-pagos"></tbody>
+          </table>
+        </div>
+        <div class="resumen-grid">
+          <div>
+            <div class="section-subtitle">Gastos del mes</div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Concepto</th>
+                    <th>Monto</th>
+                  </tr>
+                </thead>
+                <tbody id="tabla-gastos-resumen"></tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="section-subtitle">Retiros del mes</div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Socio</th>
+                    <th>Fecha</th>
+                    <th>Monto</th>
+                  </tr>
+                </thead>
+                <tbody id="tabla-retiros-resumen"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="section-subtitle">Retiros por socio</div>
+        <div class="resumen-socios" id="retiros-por-socio"></div>
       </div>
-      <div class="section-subtitle">Retiros por socio</div>
-      <div class="resumen-socios" id="retiros-por-socio"></div>
-    </div>
 
-    <!-- PAGOS -->
-    <div class="section" id="section-pagos">
-      <div class="section-header">
-        <h2>Pagos</h2>
-        <button class="btn btn-primary" onclick="openModal('modal-pago')">+ Registrar pago</button>
+      <!-- PAGOS -->
+      <div class="section" id="section-pagos">
+        <div class="section-header">
+          <h2>Pagos</h2>
+          <button class="btn btn-primary" onclick="openModal('modal-pago')">+ Registrar pago</button>
+        </div>
+        <div class="filtro-bar">
+          <div class="filtro-group">
+            <label>Mes:</label>
+            <select id="fp-mes" onchange="cargarPagos()">
+              <option value="">Todos</option>
+              <option value="1">Enero</option>
+              <option value="2">Febrero</option>
+              <option value="3">Marzo</option>
+              <option value="4">Abril</option>
+              <option value="5">Mayo</option>
+              <option value="6">Junio</option>
+              <option value="7">Julio</option>
+              <option value="8">Agosto</option>
+              <option value="9">Septiembre</option>
+              <option value="10">Octubre</option>
+              <option value="11">Noviembre</option>
+              <option value="12">Diciembre</option>
+            </select>
+          </div>
+          <div class="filtro-group">
+            <label>Año:</label>
+            <input type="number" id="fp-anio" min="2020" max="2030" placeholder="Todos">
+          </div>
+          <div class="filtro-sep"></div>
+          <div class="filtro-group">
+            <label>Contrato:</label>
+            <select id="fp-contrato" onchange="cargarPagos()">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary" onclick="cargarPagos()">Ver</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha pago</th>
+                <th>Contrato</th>
+                <th>Concepto</th>
+                <th>Monto</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tabla-pagos"></tbody>
+          </table>
+        </div>
       </div>
-      <div class="filtro-bar">
-        <div class="filtro-group">
-          <label>Mes:</label>
-          <select id="fp-mes" onchange="cargarPagos()">
-            <option value="">Todos</option>
-            <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
-            <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
-            <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
-            <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+
+      <!-- GASTOS -->
+      <div class="section" id="section-gastos">
+        <div class="section-header">
+          <h2>Gastos</h2>
+          <button class="btn btn-primary" onclick="openModal('modal-gasto')">+ Registrar gasto</button>
+        </div>
+        <div class="filtro-bar">
+          <div class="filtro-group">
+            <label>Mes:</label>
+            <select id="fg-mes" onchange="cargarGastos()">
+              <option value="">Todos</option>
+              <option value="1">Enero</option>
+              <option value="2">Febrero</option>
+              <option value="3">Marzo</option>
+              <option value="4">Abril</option>
+              <option value="5">Mayo</option>
+              <option value="6">Junio</option>
+              <option value="7">Julio</option>
+              <option value="8">Agosto</option>
+              <option value="9">Septiembre</option>
+              <option value="10">Octubre</option>
+              <option value="11">Noviembre</option>
+              <option value="12">Diciembre</option>
+            </select>
+          </div>
+          <div class="filtro-group">
+            <label>Año:</label>
+            <input type="number" id="fg-anio" min="2020" max="2030" placeholder="Todos">
+          </div>
+          <button class="btn btn-secondary" onclick="cargarGastos()">Ver</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Concepto</th>
+                <th>Monto</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tabla-gastos"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RETIROS -->
+      <div class="section" id="section-retiros">
+        <div class="section-header">
+          <h2>Retiros</h2>
+          <button class="btn btn-primary" onclick="openModal('modal-retiro')">+ Registrar retiro</button>
+        </div>
+        <div class="filtro-bar">
+          <div class="filtro-group">
+            <label>Mes:</label>
+            <select id="fr-mes" onchange="cargarRetiros()">
+              <option value="">Todos</option>
+              <option value="1">Enero</option>
+              <option value="2">Febrero</option>
+              <option value="3">Marzo</option>
+              <option value="4">Abril</option>
+              <option value="5">Mayo</option>
+              <option value="6">Junio</option>
+              <option value="7">Julio</option>
+              <option value="8">Agosto</option>
+              <option value="9">Septiembre</option>
+              <option value="10">Octubre</option>
+              <option value="11">Noviembre</option>
+              <option value="12">Diciembre</option>
+            </select>
+          </div>
+          <div class="filtro-group">
+            <label>Año:</label>
+            <input type="number" id="fr-anio" min="2020" max="2030" placeholder="Todos">
+          </div>
+          <div class="filtro-sep"></div>
+          <div class="filtro-group">
+            <label>Socio:</label>
+            <select id="fr-socio" onchange="cargarRetiros()">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary" onclick="cargarRetiros()">Ver</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Socio</th>
+                <th>Monto</th>
+                <th>Observación</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tabla-retiros"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CONTRATOS -->
+      <div class="section" id="section-contratos">
+        <div class="section-header">
+          <h2>Contratos</h2>
+          <button class="btn btn-primary" onclick="openModal('modal-contrato')">+ Nuevo contrato</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Propiedad</th>
+                <th>Inquilino</th>
+                <th>Desde</th>
+                <th>Hasta</th>
+                <th>Monto</th>
+                <th>Próximo ajuste</th>
+                <th>Archivo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-contratos"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PROPIEDADES -->
+      <div class="section" id="section-propiedades">
+        <div class="section-header">
+          <h2>Propiedades</h2>
+          <button class="btn btn-primary" onclick="openModal('modal-propiedad')">+ Nueva</button>
+        </div>
+        <div class="tab-group">
+          <div class="tab active" onclick="filtrarPropiedades('activas', this)">Activas</div>
+          <div class="tab" onclick="filtrarPropiedades('inactivas', this)">Inactivas</div>
+          <div class="tab" onclick="filtrarPropiedades('todas', this)">Todas</div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Dirección</th>
+                <th>Tipo</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tabla-propiedades"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- INQUILINOS -->
+      <div class="section" id="section-inquilinos">
+        <div class="section-header">
+          <h2>Inquilinos</h2>
+          <button class="btn btn-primary" onclick="openModal('modal-inquilino')">+ Nuevo</button>
+        </div>
+        <div class="tab-group">
+          <div class="tab active" onclick="filtrarInquilinos('activos', this)">Activos</div>
+          <div class="tab" onclick="filtrarInquilinos('inactivos', this)">Inactivos</div>
+          <div class="tab" onclick="filtrarInquilinos('todos', this)">Todos</div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Doc.</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tabla-inquilinos"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div id="modal-editar-inquilino" class="modal-overlay">
+    <div class="modal">
+      <h3>Editar Inquilino</h3>
+      <input type="hidden" id="edit-inq-id">
+      <div class="field"><input type="text" id="edit-inq-nombre" placeholder="Nombre completo"></div>
+      <div class="field"><input type="text" id="edit-inq-telefono" placeholder="Teléfono"></div>
+      <div class="field"><input type="email" id="edit-inq-email" placeholder="Email"></div>
+      <div class="field"><input type="text" id="edit-inq-documento" placeholder="Documento"></div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="guardarEdicionInquilino()">Guardar</button>
+        <button class="btn btn-secondary" onclick="closeModal('modal-editar-inquilino')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALES -->
+  <div class="modal-overlay" id="modal-pago">
+    <div class="modal">
+      <h3>Registrar pago</h3>
+      <div class="field"><label>Contrato</label><select id="pago-contrato"></select></div>
+      <div class="field"><label>Concepto</label><input type="text" id="pago-concepto"
+          placeholder="Ej: Pago alquiler junio"></div>
+      <div class="field"><label>Monto</label><input type="number" id="pago-monto" placeholder="150000"
+          inputmode="numeric"></div>
+      <div class="field"><label>Fecha de pago</label><input type="date" id="pago-fecha"></div>
+      <div class="two-col">
+        <div class="field"><label>Mes que corresponde</label>
+          <select id="pago-mes-ref">
+            <option value="1">Enero</option>
+            <option value="2">Febrero</option>
+            <option value="3">Marzo</option>
+            <option value="4">Abril</option>
+            <option value="5">Mayo</option>
+            <option value="6">Junio</option>
+            <option value="7">Julio</option>
+            <option value="8">Agosto</option>
+            <option value="9">Septiembre</option>
+            <option value="10">Octubre</option>
+            <option value="11">Noviembre</option>
+            <option value="12">Diciembre</option>
           </select>
         </div>
-        <div class="filtro-group">
-          <label>Año:</label>
-          <input type="number" id="fp-anio" min="2020" max="2030" placeholder="Todos">
-        </div>
-        <div class="filtro-sep"></div>
-        <div class="filtro-group">
-          <label>Contrato:</label>
-          <select id="fp-contrato" onchange="cargarPagos()"><option value="">Todos</option></select>
-        </div>
-        <button class="btn btn-secondary" onclick="cargarPagos()">Ver</button>
+        <div class="field"><label>Año</label><input type="number" id="pago-anio-ref" min="2020" max="2030"
+            inputmode="numeric"></div>
       </div>
-      <div class="table-wrapper">
-        <table>
-          <thead><tr><th>Fecha pago</th><th>Contrato</th><th>Concepto</th><th>Monto</th><th></th></tr></thead>
-          <tbody id="tabla-pagos"></tbody>
-        </table>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('modal-pago')">Cancelar</button>
+        <button class="btn btn-primary" onclick="registrarPago()">Guardar</button>
       </div>
     </div>
+  </div>
 
-    <!-- GASTOS -->
-    <div class="section" id="section-gastos">
-      <div class="section-header">
-        <h2>Gastos</h2>
-        <button class="btn btn-primary" onclick="openModal('modal-gasto')">+ Registrar gasto</button>
-      </div>
-      <div class="filtro-bar">
-        <div class="filtro-group">
-          <label>Mes:</label>
-          <select id="fg-mes" onchange="cargarGastos()">
-            <option value="">Todos</option>
-            <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
-            <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
-            <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
-            <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+  <div class="modal-overlay" id="modal-gasto">
+    <div class="modal">
+      <h3>Registrar gasto</h3>
+      <div class="field"><label>Concepto</label><input type="text" id="gasto-concepto"
+          placeholder="Ej: Reparación cañería"></div>
+      <div class="field"><label>Monto</label><input type="number" id="gasto-monto" placeholder="15000"
+          inputmode="numeric"></div>
+      <div class="field"><label>Fecha</label><input type="date" id="gasto-fecha"></div>
+      <div class="two-col">
+        <div class="field"><label>Mes que corresponde</label>
+          <select id="gasto-mes-ref">
+            <option value="1">Enero</option>
+            <option value="2">Febrero</option>
+            <option value="3">Marzo</option>
+            <option value="4">Abril</option>
+            <option value="5">Mayo</option>
+            <option value="6">Junio</option>
+            <option value="7">Julio</option>
+            <option value="8">Agosto</option>
+            <option value="9">Septiembre</option>
+            <option value="10">Octubre</option>
+            <option value="11">Noviembre</option>
+            <option value="12">Diciembre</option>
           </select>
         </div>
-        <div class="filtro-group">
-          <label>Año:</label>
-          <input type="number" id="fg-anio" min="2020" max="2030" placeholder="Todos">
-        </div>
-        <button class="btn btn-secondary" onclick="cargarGastos()">Ver</button>
+        <div class="field"><label>Año</label><input type="number" id="gasto-anio-ref" min="2020" max="2030"
+            inputmode="numeric"></div>
       </div>
-      <div class="table-wrapper">
-        <table>
-          <thead><tr><th>Fecha</th><th>Concepto</th><th>Monto</th><th></th></tr></thead>
-          <tbody id="tabla-gastos"></tbody>
-        </table>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('modal-gasto')">Cancelar</button>
+        <button class="btn btn-primary" onclick="registrarGasto()">Guardar</button>
       </div>
     </div>
+  </div>
 
-    <!-- RETIROS -->
-    <div class="section" id="section-retiros">
-      <div class="section-header">
-        <h2>Retiros</h2>
-        <button class="btn btn-primary" onclick="openModal('modal-retiro')">+ Registrar retiro</button>
-      </div>
-      <div class="filtro-bar">
-        <div class="filtro-group">
-          <label>Mes:</label>
-          <select id="fr-mes" onchange="cargarRetiros()">
-            <option value="">Todos</option>
-            <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
-            <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
-            <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
-            <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+  <div class="modal-overlay" id="modal-retiro">
+    <div class="modal">
+      <h3>Registrar retiro</h3>
+      <div class="field"><label>Socio</label><select id="retiro-socio"></select></div>
+      <div class="field"><label>Monto</label><input type="number" id="retiro-monto" placeholder="50000"
+          inputmode="numeric"></div>
+      <div class="field"><label>Observación</label><input type="text" id="retiro-observacion"
+          placeholder="Ej: Retiro semanal"></div>
+      <div class="two-col">
+        <div class="field"><label>Mes que corresponde</label>
+          <select id="retiro-mes-ref">
+            <option value="1">Enero</option>
+            <option value="2">Febrero</option>
+            <option value="3">Marzo</option>
+            <option value="4">Abril</option>
+            <option value="5">Mayo</option>
+            <option value="6">Junio</option>
+            <option value="7">Julio</option>
+            <option value="8">Agosto</option>
+            <option value="9">Septiembre</option>
+            <option value="10">Octubre</option>
+            <option value="11">Noviembre</option>
+            <option value="12">Diciembre</option>
           </select>
         </div>
-        <div class="filtro-group">
-          <label>Año:</label>
-          <input type="number" id="fr-anio" min="2020" max="2030" placeholder="Todos">
+        <div class="field"><label>Año</label><input type="number" id="retiro-anio-ref" min="2020" max="2030"
+            inputmode="numeric"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('modal-retiro')">Cancelar</button>
+        <button class="btn btn-primary" onclick="registrarRetiro()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-contrato">
+    <div class="modal">
+      <h3>Nuevo contrato</h3>
+      <div class="field"><label>Propiedad</label><select id="contrato-propiedad"></select></div>
+      <div class="field"><label>Inquilino</label><select id="contrato-inquilino"></select></div>
+      <div class="two-col">
+        <div class="field"><label>Fecha inicio</label><input type="date" id="contrato-inicio"></div>
+        <div class="field"><label>Fecha fin</label><input type="date" id="contrato-fin"></div>
+      </div>
+      <div class="two-col">
+        <div class="field"><label>Monto base</label><input type="number" id="contrato-monto" placeholder="150000"
+            inputmode="numeric"></div>
+        <div class="field"><label>Depósito</label><input type="number" id="contrato-deposito" placeholder="300000"
+            inputmode="numeric"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('modal-contrato')">Cancelar</button>
+        <button class="btn btn-primary" onclick="registrarContrato()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-editar-contrato" class="modal-overlay">
+    <div class="modal">
+      <h3>Editar contrato</h3>
+      <input type="hidden" id="edit-cont-id">
+      <div class="field"><label>Propiedad</label><select id="edit-cont-propiedad"></select></div>
+      <div class="field"><label>Inquilino</label><select id="edit-cont-inquilino"></select></div>
+      <div class="two-col">
+        <div class="field"><label>Fecha inicio</label><input type="date" id="edit-cont-inicio"></div>
+        <div class="field"><label>Fecha fin</label><input type="date" id="edit-cont-fin"></div>
+      </div>
+      <div class="two-col">
+        <div class="field"><label>Monto base</label><input type="number" id="edit-cont-monto"></div>
+        <div class="field"><label>Depósito</label><input type="number" id="edit-cont-deposito"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('modal-editar-contrato')">Cancelar</button>
+        <button class="btn btn-primary" onclick="guardarEdicionContrato()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-propiedad">
+    <div class="modal">
+      <h3>Nueva propiedad</h3>
+      <div class="field"><label>Nombre</label><input type="text" id="prop-nombre" placeholder="Ej: Local Centro"></div>
+      <div class="field"><label>Dirección</label><input type="text" id="prop-direccion"
+          placeholder="Ej: Av. Principal 123"></div>
+      <div class="field"><label>Tipo</label>
+        <select id="prop-tipo">
+          <option value="local">Local</option>
+          <option value="departamento">Departamento</option>
+          <option value="casa">Casa</option>
+          <option value="galpon">Galpón</option>
+          <option value="oficina">Oficina</option>
+          <option value="deposito">Depósito</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('modal-propiedad')">Cancelar</button>
+        <button class="btn btn-primary" onclick="registrarPropiedad()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-inquilino">
+    <div class="modal">
+      <h3>Nuevo inquilino</h3>
+      <div class="field"><label>Nombre completo</label><input type="text" id="inq-nombre"
+          placeholder="Ej: Carlos Pérez"></div>
+      <div class="two-col">
+        <div class="field"><label>Teléfono</label><input type="text" id="inq-telefono" placeholder="2494111111"
+            inputmode="tel"></div>
+        <div class="field"><label>Documento</label><input type="text" id="inq-documento" placeholder="30111222"
+            inputmode="numeric"></div>
+      </div>
+      <div class="field"><label>Email</label><input type="email" id="inq-email" placeholder="carlos@gmail.com"
+          inputmode="email"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('modal-inquilino')">Cancelar</button>
+        <button class="btn btn-primary" onclick="registrarInquilino()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL AJUSTE DE MONTO -->
+  <div class="modal-overlay" id="modal-ajuste">
+    <div class="modal">
+      <h3>Registrar ajuste de monto</h3>
+      <input type="hidden" id="ajuste-id-contrato">
+      <div class="field"><label>Contrato</label>
+        <div id="ajuste-info-contrato" style="font-weight:600; padding:6px 0; color:var(--text)"></div>
+      </div>
+      <div class="field"><label>Monto actual</label>
+        <div id="ajuste-monto-actual" style="padding:6px 0; color:var(--text-muted)"></div>
+      </div>
+      <div class="field"><label>Nuevo monto</label><input type="number" id="ajuste-nuevo-monto" placeholder="Ej: 220000"
+          inputmode="numeric"></div>
+      <div class="field"><label>Fecha del ajuste</label><input type="date" id="ajuste-fecha"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('modal-ajuste')">Cancelar</button>
+        <button class="btn btn-primary" onclick="confirmarAjuste()">Confirmar ajuste</button>
+        <div class="field">
+          <label>Periodicidad (opcional)</label>
+          <select id="ajuste-periodicidad">
+            <option value="">Sin cambios</option>
+            <option value="1">Mensual</option>
+            <option value="2">Bimestral</option>
+            <option value="3">Trimestral</option>
+            <option value="4">Cuatrimestral</option>
+            <option value="6">Semestral</option>
+            <option value="12">Anual</option>
+          </select>
         </div>
-        <div class="filtro-sep"></div>
-        <div class="filtro-group">
-          <label>Socio:</label>
-          <select id="fr-socio" onchange="cargarRetiros()"><option value="">Todos</option></select>
-        </div>
-        <button class="btn btn-secondary" onclick="cargarRetiros()">Ver</button>
       </div>
-      <div class="table-wrapper">
-        <table>
-          <thead><tr><th>Fecha</th><th>Socio</th><th>Monto</th><th>Observación</th><th></th></tr></thead>
-          <tbody id="tabla-retiros"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- CONTRATOS -->
-    <div class="section" id="section-contratos">
-      <div class="section-header">
-        <h2>Contratos</h2>
-        <button class="btn btn-primary" onclick="openModal('modal-contrato')">+ Nuevo contrato</button>
-      </div>
-      <div class="table-wrapper">
-        <table>
-          <thead><tr><th>#</th><th>Propiedad</th><th>Inquilino</th><th>Desde</th><th>Hasta</th><th>Monto</th><th>Próximo ajuste</th><th>Archivo</th><th>Acciones</th></tr></thead>
-          <tbody id="tabla-contratos"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- PROPIEDADES -->
-    <div class="section" id="section-propiedades">
-      <div class="section-header">
-        <h2>Propiedades</h2>
-        <button class="btn btn-primary" onclick="openModal('modal-propiedad')">+ Nueva</button>
-      </div>
-      <div class="tab-group">
-        <div class="tab active" onclick="filtrarPropiedades('activas', this)">Activas</div>
-        <div class="tab" onclick="filtrarPropiedades('inactivas', this)">Inactivas</div>
-        <div class="tab" onclick="filtrarPropiedades('todas', this)">Todas</div>
-      </div>
-      <div class="table-wrapper">
-        <table>
-          <thead><tr><th>Nombre</th><th>Dirección</th><th>Tipo</th><th>Estado</th><th></th></tr></thead>
-          <tbody id="tabla-propiedades"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- INQUILINOS -->
-    <div class="section" id="section-inquilinos">
-      <div class="section-header">
-        <h2>Inquilinos</h2>
-        <button class="btn btn-primary" onclick="openModal('modal-inquilino')">+ Nuevo</button>
-      </div>
-      <div class="tab-group">
-        <div class="tab active" onclick="filtrarInquilinos('activos', this)">Activos</div>
-        <div class="tab" onclick="filtrarInquilinos('inactivos', this)">Inactivos</div>
-        <div class="tab" onclick="filtrarInquilinos('todos', this)">Todos</div>
-      </div>
-      <div class="table-wrapper">
-        <table>
-          <thead><tr><th>Nombre</th><th>Teléfono</th><th>Email</th><th>Doc.</th><th>Estado</th><th></th></tr></thead>
-          <tbody id="tabla-inquilinos"></tbody>
-        </table>
-      </div>
-    </div>
-
-  </main>
-</div>
-
-<div id="modal-editar-inquilino" class="modal-overlay">
-  <div class="modal">
-    <h3>Editar Inquilino</h3>
-    <input type="hidden" id="edit-inq-id">
-    <div class="field"><input type="text" id="edit-inq-nombre" placeholder="Nombre completo"></div>
-    <div class="field"><input type="text" id="edit-inq-telefono" placeholder="Teléfono"></div>
-    <div class="field"><input type="email" id="edit-inq-email" placeholder="Email"></div>
-    <div class="field"><input type="text" id="edit-inq-documento" placeholder="Documento"></div>
-    <div class="modal-actions">
-      <button class="btn btn-primary" onclick="guardarEdicionInquilino()">Guardar</button>
-      <button class="btn btn-secondary" onclick="closeModal('modal-editar-inquilino')">Cancelar</button>
     </div>
   </div>
-</div>
 
-<!-- MODALES -->
-<div class="modal-overlay" id="modal-pago">
-  <div class="modal">
-    <h3>Registrar pago</h3>
-    <div class="field"><label>Contrato</label><select id="pago-contrato"></select></div>
-    <div class="field"><label>Concepto</label><input type="text" id="pago-concepto" placeholder="Ej: Pago alquiler junio"></div>
-    <div class="field"><label>Monto</label><input type="number" id="pago-monto" placeholder="150000" inputmode="numeric"></div>
-    <div class="field"><label>Fecha de pago</label><input type="date" id="pago-fecha"></div>
-    <div class="two-col">
-      <div class="field"><label>Mes que corresponde</label>
-        <select id="pago-mes-ref">
-          <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
-          <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
-          <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
-          <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+  <!-- MODAL CONFIGURAR PERIODICIDAD -->
+  <div class="modal-overlay" id="modal-periodicidad">
+    <div class="modal">
+      <h3>Configurar periodicidad de ajuste</h3>
+      <input type="hidden" id="per-id-contrato">
+      <div class="field"><label>Contrato</label>
+        <div id="per-info-contrato" style="font-weight:600; padding:6px 0; color:var(--text)"></div>
+      </div>
+      <div class="field">
+        <label>Periodicidad</label>
+        <select id="per-meses">
+          <option value="1">Mensual</option>
+          <option value="2">Bimestral</option>
+          <option value="3" selected>Trimestral</option>
+          <option value="4">Cuatrimestral</option>
+          <option value="6">Semestral</option>
+          <option value="12">Anual</option>
         </select>
       </div>
-      <div class="field"><label>Año</label><input type="number" id="pago-anio-ref" min="2020" max="2030" inputmode="numeric"></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('modal-pago')">Cancelar</button>
-      <button class="btn btn-primary" onclick="registrarPago()">Guardar</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="modal-gasto">
-  <div class="modal">
-    <h3>Registrar gasto</h3>
-    <div class="field"><label>Concepto</label><input type="text" id="gasto-concepto" placeholder="Ej: Reparación cañería"></div>
-    <div class="field"><label>Monto</label><input type="number" id="gasto-monto" placeholder="15000" inputmode="numeric"></div>
-    <div class="field"><label>Fecha</label><input type="date" id="gasto-fecha"></div>
-    <div class="two-col">
-      <div class="field"><label>Mes que corresponde</label>
-        <select id="gasto-mes-ref">
-          <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
-          <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
-          <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
-          <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
-        </select>
+      <div class="field"><label>Fecha del último ajuste</label><input type="date" id="per-ultimo-ajuste"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('modal-periodicidad')">Cancelar</button>
+        <button class="btn btn-primary" onclick="confirmarPeriodicidad()">Guardar</button>
       </div>
-      <div class="field"><label>Año</label><input type="number" id="gasto-anio-ref" min="2020" max="2030" inputmode="numeric"></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('modal-gasto')">Cancelar</button>
-      <button class="btn btn-primary" onclick="registrarGasto()">Guardar</button>
     </div>
   </div>
-</div>
 
-<div class="modal-overlay" id="modal-retiro">
-  <div class="modal">
-    <h3>Registrar retiro</h3>
-    <div class="field"><label>Socio</label><select id="retiro-socio"></select></div>
-    <div class="field"><label>Monto</label><input type="number" id="retiro-monto" placeholder="50000" inputmode="numeric"></div>
-    <div class="field"><label>Observación</label><input type="text" id="retiro-observacion" placeholder="Ej: Retiro semanal"></div>
-    <div class="two-col">
-      <div class="field"><label>Mes que corresponde</label>
-        <select id="retiro-mes-ref">
-          <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
-          <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
-          <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
-          <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
-        </select>
-      </div>
-      <div class="field"><label>Año</label><input type="number" id="retiro-anio-ref" min="2020" max="2030" inputmode="numeric"></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('modal-retiro')">Cancelar</button>
-      <button class="btn btn-primary" onclick="registrarRetiro()">Guardar</button>
-    </div>
-  </div>
-</div>
+  <script>
+    const API = 'https://alquileres-production-2ae0.up.railway.app';
+    let usuarioActual = null;
+    let socios = [], propiedades = [], inquilinos = [], contratos = [];
+    let todasPropiedades = [], todosInquilinos = [];
+    let filtroProp = 'activas', filtroInq = 'activos';
 
-<div class="modal-overlay" id="modal-contrato">
-  <div class="modal">
-    <h3>Nuevo contrato</h3>
-    <div class="field"><label>Propiedad</label><select id="contrato-propiedad"></select></div>
-    <div class="field"><label>Inquilino</label><select id="contrato-inquilino"></select></div>
-    <div class="two-col">
-      <div class="field"><label>Fecha inicio</label><input type="date" id="contrato-inicio"></div>
-      <div class="field"><label>Fecha fin</label><input type="date" id="contrato-fin"></div>
-    </div>
-    <div class="two-col">
-      <div class="field"><label>Monto base</label><input type="number" id="contrato-monto" placeholder="150000" inputmode="numeric"></div>
-      <div class="field"><label>Depósito</label><input type="number" id="contrato-deposito" placeholder="300000" inputmode="numeric"></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('modal-contrato')">Cancelar</button>
-      <button class="btn btn-primary" onclick="registrarContrato()">Guardar</button>
-    </div>
-  </div>
-</div>
+    async function login() {
+      const usuario = document.getElementById('login-nombre').value.trim();
+      const password = document.getElementById('login-password').value;
+      try {
+        const res = await fetch(`${API}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ usuario, password }) });
+        const data = await res.json();
+        if (data.ok) {
+          usuarioActual = data;
+          document.getElementById('nav-nombre').textContent = data.nombre;
+          const nm = document.getElementById('nav-nombre-mobile');
+          if (nm) nm.textContent = data.nombre;
+          document.getElementById('login-screen').style.display = 'none';
+          document.getElementById('app').style.display = 'block';
+          await cargarDatosBase();
+          cargarResumen();
+          cargarAlertasAjuste();
+        } else { document.getElementById('login-error').style.display = 'block'; }
+      } catch { document.getElementById('login-error').style.display = 'block'; }
+    }
 
-<div id="modal-editar-contrato" class="modal-overlay">
-  <div class="modal">
-    <h3>Editar contrato</h3>
-    <input type="hidden" id="edit-cont-id">
-    <div class="field"><label>Propiedad</label><select id="edit-cont-propiedad"></select></div>
-    <div class="field"><label>Inquilino</label><select id="edit-cont-inquilino"></select></div>
-    <div class="two-col">
-      <div class="field"><label>Fecha inicio</label><input type="date" id="edit-cont-inicio"></div>
-      <div class="field"><label>Fecha fin</label><input type="date" id="edit-cont-fin"></div>
-    </div>
-    <div class="two-col">
-      <div class="field"><label>Monto base</label><input type="number" id="edit-cont-monto"></div>
-      <div class="field"><label>Depósito</label><input type="number" id="edit-cont-deposito"></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('modal-editar-contrato')">Cancelar</button>
-      <button class="btn btn-primary" onclick="guardarEdicionContrato()">Guardar</button>
-    </div>
-  </div>
-</div>
+    function logout() {
+      usuarioActual = null;
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('login-password').value = '';
+      document.getElementById('login-error').style.display = 'none';
+    }
 
-<div class="modal-overlay" id="modal-propiedad">
-  <div class="modal">
-    <h3>Nueva propiedad</h3>
-    <div class="field"><label>Nombre</label><input type="text" id="prop-nombre" placeholder="Ej: Local Centro"></div>
-    <div class="field"><label>Dirección</label><input type="text" id="prop-direccion" placeholder="Ej: Av. Principal 123"></div>
-    <div class="field"><label>Tipo</label>
-      <select id="prop-tipo">
-        <option value="local">Local</option><option value="departamento">Departamento</option>
-        <option value="casa">Casa</option><option value="galpon">Galpón</option>
-        <option value="oficina">Oficina</option><option value="deposito">Depósito</option>
-      </select>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('modal-propiedad')">Cancelar</button>
-      <button class="btn btn-primary" onclick="registrarPropiedad()">Guardar</button>
-    </div>
-  </div>
-</div>
+    function toggleMobileMenu() {
+      document.getElementById('nav-mobile-menu').classList.toggle('open');
+    }
+    function closeMobileMenu() {
+      document.getElementById('nav-mobile-menu').classList.remove('open');
+    }
 
-<div class="modal-overlay" id="modal-inquilino">
-  <div class="modal">
-    <h3>Nuevo inquilino</h3>
-    <div class="field"><label>Nombre completo</label><input type="text" id="inq-nombre" placeholder="Ej: Carlos Pérez"></div>
-    <div class="two-col">
-      <div class="field"><label>Teléfono</label><input type="text" id="inq-telefono" placeholder="2494111111" inputmode="tel"></div>
-      <div class="field"><label>Documento</label><input type="text" id="inq-documento" placeholder="30111222" inputmode="numeric"></div>
-    </div>
-    <div class="field"><label>Email</label><input type="email" id="inq-email" placeholder="carlos@gmail.com" inputmode="email"></div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('modal-inquilino')">Cancelar</button>
-      <button class="btn btn-primary" onclick="registrarInquilino()">Guardar</button>
-    </div>
-  </div>
-</div>
+    function showSection(name, el) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      // Update both desktop and mobile nav links
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      document.getElementById('section-' + name).classList.add('active');
+      el.classList.add('active');
+      // Also highlight mobile menu link with same section
+      document.querySelectorAll('#nav-mobile-menu .nav-link').forEach(l => {
+        l.classList.remove('active');
+        if (l.getAttribute('onclick') && l.getAttribute('onclick').includes("'" + name + "'")) l.classList.add('active');
+      });
+      if (name === 'pagos') cargarPagos();
+      if (name === 'gastos') cargarGastos();
+      if (name === 'retiros') cargarRetiros();
+      if (name === 'contratos') cargarContratos();
+      if (name === 'propiedades') renderPropiedades();
+      if (name === 'inquilinos') renderInquilinos();
+    }
 
-<!-- MODAL AJUSTE DE MONTO -->
-<div class="modal-overlay" id="modal-ajuste">
-  <div class="modal">
-    <h3>Registrar ajuste de monto</h3>
-    <input type="hidden" id="ajuste-id-contrato">
-    <div class="field"><label>Contrato</label><div id="ajuste-info-contrato" style="font-weight:600; padding:6px 0; color:var(--text)"></div></div>
-    <div class="field"><label>Monto actual</label><div id="ajuste-monto-actual" style="padding:6px 0; color:var(--text-muted)"></div></div>
-    <div class="field"><label>Nuevo monto</label><input type="number" id="ajuste-nuevo-monto" placeholder="Ej: 220000" inputmode="numeric"></div>
-    <div class="field"><label>Fecha del ajuste</label><input type="date" id="ajuste-fecha"></div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('modal-ajuste')">Cancelar</button>
-      <button class="btn btn-primary" onclick="confirmarAjuste()">Confirmar ajuste</button>
-    </div>
-  </div>
-</div>
+    function openModal(id) {
+      document.getElementById(id).classList.add('open');
+      const hoy = new Date();
+      const hoyStr = hoy.toISOString().split('T')[0];
+      const mes = hoy.getMonth() + 1;
+      const anio = hoy.getFullYear();
+      if (id === 'modal-pago') {
+        document.getElementById('pago-fecha').value = hoyStr;
+        document.getElementById('pago-mes-ref').value = mes;
+        document.getElementById('pago-anio-ref').value = anio;
+        llenarSelect('pago-contrato', contratos, c => `#${c.id} — ${nombrePropiedad(c.idPropiedad)} / ${nombreInquilino(c.idInquilino)}`, c => c.id);
+      }
+      if (id === 'modal-gasto') {
+        document.getElementById('gasto-fecha').value = hoyStr;
+        document.getElementById('gasto-mes-ref').value = mes;
+        document.getElementById('gasto-anio-ref').value = anio;
+      }
+      if (id === 'modal-retiro') {
+        document.getElementById('retiro-mes-ref').value = mes;
+        document.getElementById('retiro-anio-ref').value = anio;
+        llenarSelect('retiro-socio', socios, s => s.nombre, s => s.id);
+      }
+      if (id === 'modal-contrato') {
+        llenarSelect('contrato-propiedad', propiedades, p => `${p.nombre} — ${p.direccion}`, p => p.id);
+        llenarSelect('contrato-inquilino', inquilinos, i => `${i.nombre} (DNI: ${i.documento})`, i => i.id);
+      }
+    }
 
-<!-- MODAL CONFIGURAR PERIODICIDAD -->
-<div class="modal-overlay" id="modal-periodicidad">
-  <div class="modal">
-    <h3>Configurar periodicidad de ajuste</h3>
-    <input type="hidden" id="per-id-contrato">
-    <div class="field"><label>Contrato</label><div id="per-info-contrato" style="font-weight:600; padding:6px 0; color:var(--text)"></div></div>
-    <div class="field">
-      <label>Periodicidad</label>
-      <select id="per-meses">
-        <option value="1">Mensual</option>
-        <option value="2">Bimestral</option>
-        <option value="3" selected>Trimestral</option>
-        <option value="4">Cuatrimestral</option>
-        <option value="6">Semestral</option>
-        <option value="12">Anual</option>
-      </select>
-    </div>
-    <div class="field"><label>Fecha del último ajuste</label><input type="date" id="per-ultimo-ajuste"></div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal('modal-periodicidad')">Cancelar</button>
-      <button class="btn btn-primary" onclick="confirmarPeriodicidad()">Guardar</button>
-    </div>
-  </div>
-</div>
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    function llenarSelect(id, items, labelFn, valueFn) {
+      document.getElementById(id).innerHTML = items.map(i => `<option value="${valueFn(i)}">${labelFn(i)}</option>`).join('');
+    }
+    document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); }));
 
-<script>
-const API = 'https://alquileres-production-2ae0.up.railway.app';
-let usuarioActual = null;
-let socios = [], propiedades = [], inquilinos = [], contratos = [];
-let todasPropiedades = [], todosInquilinos = [];
-let filtroProp = 'activas', filtroInq = 'activos';
+    async function cargarDatosBase() {
+      const [s, p, i, c, tp, ti] = await Promise.all([
+        fetch(`${API}/socios`).then(r => r.json()),
+        fetch(`${API}/propiedades`).then(r => r.json()),
+        fetch(`${API}/inquilinos`).then(r => r.json()),
+        fetch(`${API}/contratos`).then(r => r.json()),
+        fetch(`${API}/propiedades`).then(r => r.json()),
+        fetch(`${API}/inquilinos/todos`).then(r => r.json())
+      ]);
+      socios = s; propiedades = p; inquilinos = i; contratos = c;
+      todasPropiedades = tp; todosInquilinos = ti;
+      // Llenar filtros fijos
+      const selSocio = document.getElementById('fr-socio');
+      selSocio.innerHTML = '<option value="">Todos</option>' + socios.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('');
+      const selContrato = document.getElementById('fp-contrato');
+      selContrato.innerHTML = '<option value="">Todos</option>' + contratos.map(c => `<option value="${c.id}">#${c.id} — ${nombrePropiedad(c.idPropiedad)}</option>`).join('');
+    }
 
-async function login() {
-  const usuario = document.getElementById('login-nombre').value.trim();
-  const password = document.getElementById('login-password').value;
-  try {
-    const res = await fetch(`${API}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ usuario, password }) });
-    const data = await res.json();
-    if (data.ok) {
-      usuarioActual = data;
-      document.getElementById('nav-nombre').textContent = data.nombre;
-      const nm = document.getElementById('nav-nombre-mobile');
-      if (nm) nm.textContent = data.nombre;
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-      await cargarDatosBase();
-      cargarResumen();
-      cargarAlertasAjuste();
-    } else { document.getElementById('login-error').style.display = 'block'; }
-  } catch { document.getElementById('login-error').style.display = 'block'; }
-}
+    function nombreSocio(id) { const s = socios.find(x => x.id === id); return s ? s.nombre : `Socio ${id}`; }
+    function nombrePropiedad(id) { const p = todasPropiedades.find(x => x.id === id); return p ? p.nombre : `Prop. ${id}`; }
+    function nombreInquilino(id) { const i = todosInquilinos.find(x => x.id === id); return i ? i.nombre : `Inq. ${id}`; }
+    function formatPeso(n) { return '$ ' + Number(n).toLocaleString('es-AR', { minimumFractionDigits: 0 }); }
 
-function logout() {
-  usuarioActual = null;
-  document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('login-password').value = '';
-  document.getElementById('login-error').style.display = 'none';
-}
+    // RESUMEN
+    async function cargarResumen() {
+      const mes = document.getElementById('resumen-mes').value;
+      const anio = document.getElementById('resumen-anio').value;
+      try {
+        const data = await fetch(`${API}/movimientos/resumen/${anio}/${mes}`).then(r => r.json());
+        document.getElementById('card-ingresos').textContent = formatPeso(data.totalIngresos);
+        document.getElementById('card-retiros').textContent = formatPeso(data.totalRetiros);
+        document.getElementById('card-gastos').textContent = formatPeso(data.totalGastos);
+        const saldo = data.saldo;
+        const el = document.getElementById('card-saldo');
+        el.textContent = formatPeso(saldo);
+        el.className = 'card-value ' + (saldo >= 0 ? 'green' : 'red');
+      } catch { }
+      await cargarEstadoPagos();
+      await cargarGastosResumen();
+      await cargarRetirosResumen();
+      await cargarRetirosPorSocio();
+    }
 
-function toggleMobileMenu() {
-  document.getElementById('nav-mobile-menu').classList.toggle('open');
-}
-function closeMobileMenu() {
-  document.getElementById('nav-mobile-menu').classList.remove('open');
-}
-
-function showSection(name, el) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  // Update both desktop and mobile nav links
-  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-  document.getElementById('section-' + name).classList.add('active');
-  el.classList.add('active');
-  // Also highlight mobile menu link with same section
-  document.querySelectorAll('#nav-mobile-menu .nav-link').forEach(l => {
-    l.classList.remove('active');
-    if (l.getAttribute('onclick') && l.getAttribute('onclick').includes("'" + name + "'")) l.classList.add('active');
-  });
-  if (name === 'pagos') cargarPagos();
-  if (name === 'gastos') cargarGastos();
-  if (name === 'retiros') cargarRetiros();
-  if (name === 'contratos') cargarContratos();
-  if (name === 'propiedades') renderPropiedades();
-  if (name === 'inquilinos') renderInquilinos();
-}
-
-function openModal(id) {
-  document.getElementById(id).classList.add('open');
-  const hoy = new Date();
-  const hoyStr = hoy.toISOString().split('T')[0];
-  const mes = hoy.getMonth() + 1;
-  const anio = hoy.getFullYear();
-  if (id === 'modal-pago') {
-    document.getElementById('pago-fecha').value = hoyStr;
-    document.getElementById('pago-mes-ref').value = mes;
-    document.getElementById('pago-anio-ref').value = anio;
-    llenarSelect('pago-contrato', contratos, c => `#${c.id} — ${nombrePropiedad(c.idPropiedad)} / ${nombreInquilino(c.idInquilino)}`, c => c.id);
-  }
-  if (id === 'modal-gasto') {
-    document.getElementById('gasto-fecha').value = hoyStr;
-    document.getElementById('gasto-mes-ref').value = mes;
-    document.getElementById('gasto-anio-ref').value = anio;
-  }
-  if (id === 'modal-retiro') {
-    document.getElementById('retiro-mes-ref').value = mes;
-    document.getElementById('retiro-anio-ref').value = anio;
-    llenarSelect('retiro-socio', socios, s => s.nombre, s => s.id);
-  }
-  if (id === 'modal-contrato') {
-    llenarSelect('contrato-propiedad', propiedades, p => `${p.nombre} — ${p.direccion}`, p => p.id);
-    llenarSelect('contrato-inquilino', inquilinos, i => `${i.nombre} (DNI: ${i.documento})`, i => i.id);
-  }
-}
-
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-function llenarSelect(id, items, labelFn, valueFn) {
-  document.getElementById(id).innerHTML = items.map(i => `<option value="${valueFn(i)}">${labelFn(i)}</option>`).join('');
-}
-document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); }));
-
-async function cargarDatosBase() {
-  const [s, p, i, c, tp, ti] = await Promise.all([
-    fetch(`${API}/socios`).then(r => r.json()),
-    fetch(`${API}/propiedades`).then(r => r.json()),
-    fetch(`${API}/inquilinos`).then(r => r.json()),
-    fetch(`${API}/contratos`).then(r => r.json()),
-    fetch(`${API}/propiedades`).then(r => r.json()),
-    fetch(`${API}/inquilinos/todos`).then(r => r.json())
-  ]);
-  socios = s; propiedades = p; inquilinos = i; contratos = c;
-  todasPropiedades = tp; todosInquilinos = ti;
-  // Llenar filtros fijos
-  const selSocio = document.getElementById('fr-socio');
-  selSocio.innerHTML = '<option value="">Todos</option>' + socios.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('');
-  const selContrato = document.getElementById('fp-contrato');
-  selContrato.innerHTML = '<option value="">Todos</option>' + contratos.map(c => `<option value="${c.id}">#${c.id} — ${nombrePropiedad(c.idPropiedad)}</option>`).join('');
-}
-
-function nombreSocio(id) { const s = socios.find(x => x.id === id); return s ? s.nombre : `Socio ${id}`; }
-function nombrePropiedad(id) { const p = todasPropiedades.find(x => x.id === id); return p ? p.nombre : `Prop. ${id}`; }
-function nombreInquilino(id) { const i = todosInquilinos.find(x => x.id === id); return i ? i.nombre : `Inq. ${id}`; }
-function formatPeso(n) { return '$ ' + Number(n).toLocaleString('es-AR', { minimumFractionDigits: 0 }); }
-
-// RESUMEN
-async function cargarResumen() {
-  const mes = document.getElementById('resumen-mes').value;
-  const anio = document.getElementById('resumen-anio').value;
-  try {
-    const data = await fetch(`${API}/movimientos/resumen/${anio}/${mes}`).then(r => r.json());
-    document.getElementById('card-ingresos').textContent = formatPeso(data.totalIngresos);
-    document.getElementById('card-retiros').textContent = formatPeso(data.totalRetiros);
-    document.getElementById('card-gastos').textContent = formatPeso(data.totalGastos);
-    const saldo = data.saldo;
-    const el = document.getElementById('card-saldo');
-    el.textContent = formatPeso(saldo);
-    el.className = 'card-value ' + (saldo >= 0 ? 'green' : 'red');
-  } catch {}
-  await cargarEstadoPagos();
-  await cargarGastosResumen();
-  await cargarRetirosResumen();
-  await cargarRetirosPorSocio();
-}
-
-async function cargarEstadoPagos() {
-  const mes = document.getElementById('resumen-mes').value;
-  const anio = document.getElementById('resumen-anio').value;
-  const tbody = document.getElementById('tabla-estado-pagos');
-  tbody.innerHTML = '';
-  for (const c of contratos) {
-    const pagos = await fetch(`${API}/movimientos/contrato/${c.id}/${anio}/${mes}`).then(r => r.json());
-    const pagado = pagos.reduce((s, p) => s + p.monto, 0);
-    const adeuda = Math.max(0, c.montoBase - pagado);
-    let cls, txt;
-    if (pagado === 0) { cls = 'badge-red'; txt = 'Sin pagar'; }
-    else if (adeuda === 0) { cls = 'badge-green'; txt = 'Pagado'; }
-    else { cls = 'badge-yellow'; txt = 'Parcial'; }
-    tbody.innerHTML += `<tr>
+    async function cargarEstadoPagos() {
+      const mes = document.getElementById('resumen-mes').value;
+      const anio = document.getElementById('resumen-anio').value;
+      const tbody = document.getElementById('tabla-estado-pagos');
+      tbody.innerHTML = '';
+      for (const c of contratos) {
+        const pagos = await fetch(`${API}/movimientos/contrato/${c.id}/${anio}/${mes}`).then(r => r.json());
+        const pagado = pagos.reduce((s, p) => s + p.monto, 0);
+        const adeuda = Math.max(0, c.montoBase - pagado);
+        let cls, txt;
+        if (pagado === 0) { cls = 'badge-red'; txt = 'Sin pagar'; }
+        else if (adeuda === 0) { cls = 'badge-green'; txt = 'Pagado'; }
+        else { cls = 'badge-yellow'; txt = 'Parcial'; }
+        tbody.innerHTML += `<tr>
       <td>${nombreInquilino(c.idInquilino)}</td>
       <td class="hide-mobile">${nombrePropiedad(c.idPropiedad)}</td>
       <td class="mono">${formatPeso(c.montoBase)}</td>
@@ -818,48 +1688,48 @@ async function cargarEstadoPagos() {
       <td class="mono ${adeuda > 0 ? 'adeuda' : 'pagado'}">${formatPeso(adeuda)}</td>
       <td><span class="badge ${cls}">${txt}</span></td>
     </tr>`;
-  }
-  if (!contratos.length) tbody.innerHTML = '<tr><td colspan="6" class="empty">No hay contratos activos</td></tr>';
-}
+      }
+      if (!contratos.length) tbody.innerHTML = '<tr><td colspan="6" class="empty">No hay contratos activos</td></tr>';
+    }
 
-async function cargarGastosResumen() {
-  const mes = document.getElementById('resumen-mes').value;
-  const anio = document.getElementById('resumen-anio').value;
-  const data = await fetch(`${API}/movimientos/gastos/${anio}/${mes}`).then(r => r.json());
-  const tbody = document.getElementById('tabla-gastos-resumen');
-  if (!data.length) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Sin gastos</td></tr>'; return; }
-  tbody.innerHTML = data.map(g => `<tr><td>${g.fecha}</td><td>${g.concepto}</td><td class="mono">${formatPeso(g.monto)}</td></tr>`).join('');
-}
+    async function cargarGastosResumen() {
+      const mes = document.getElementById('resumen-mes').value;
+      const anio = document.getElementById('resumen-anio').value;
+      const data = await fetch(`${API}/movimientos/gastos/${anio}/${mes}`).then(r => r.json());
+      const tbody = document.getElementById('tabla-gastos-resumen');
+      if (!data.length) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Sin gastos</td></tr>'; return; }
+      tbody.innerHTML = data.map(g => `<tr><td>${g.fecha}</td><td>${g.concepto}</td><td class="mono">${formatPeso(g.monto)}</td></tr>`).join('');
+    }
 
-async function cargarRetirosResumen() {
-  const mes = document.getElementById('resumen-mes').value;
-  const anio = document.getElementById('resumen-anio').value;
-  const tbody = document.getElementById('tabla-retiros-resumen');
-  let total = [];
-  for (const s of socios) {
-    const retiros = await fetch(`${API}/retiros/socio/${s.id}/${anio}/${mes}`).then(r => r.json());
-    retiros.forEach(r => total.push({ ...r, nSocio: s.nombre }));
-  }
-  if (!total.length) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Sin retiros</td></tr>'; return; }
-  tbody.innerHTML = total.map(r => `<tr><td>${r.nSocio}</td><td>${r.fecha ? r.fecha.substring(0,10) : '—'}</td><td class="mono">${formatPeso(r.monto)}</td></tr>`).join('');
-}
+    async function cargarRetirosResumen() {
+      const mes = document.getElementById('resumen-mes').value;
+      const anio = document.getElementById('resumen-anio').value;
+      const tbody = document.getElementById('tabla-retiros-resumen');
+      let total = [];
+      for (const s of socios) {
+        const retiros = await fetch(`${API}/retiros/socio/${s.id}/${anio}/${mes}`).then(r => r.json());
+        retiros.forEach(r => total.push({ ...r, nSocio: s.nombre }));
+      }
+      if (!total.length) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Sin retiros</td></tr>'; return; }
+      tbody.innerHTML = total.map(r => `<tr><td>${r.nSocio}</td><td>${r.fecha ? r.fecha.substring(0, 10) : '—'}</td><td class="mono">${formatPeso(r.monto)}</td></tr>`).join('');
+    }
 
-async function cargarRetirosPorSocio() {
-  const mes = document.getElementById('resumen-mes').value;
-  const anio = document.getElementById('resumen-anio').value;
-  const container = document.getElementById('retiros-por-socio');
-  container.innerHTML = '<p style="color:var(--text-soft);font-size:13px">Cargando...</p>';
-  const tarjetas = [];
-  for (const socio of socios) {
-    const retiros = await fetch(`${API}/retiros/socio/${socio.id}/${anio}/${mes}`).then(r => r.json());
-    const total = retiros.reduce((s, r) => s + r.monto, 0);
-    const filas = retiros.length
-      ? retiros.map(r => `<tr>
-          <td style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-soft)">${r.fecha ? r.fecha.substring(0,10) : '—'}</td>
+    async function cargarRetirosPorSocio() {
+      const mes = document.getElementById('resumen-mes').value;
+      const anio = document.getElementById('resumen-anio').value;
+      const container = document.getElementById('retiros-por-socio');
+      container.innerHTML = '<p style="color:var(--text-soft);font-size:13px">Cargando...</p>';
+      const tarjetas = [];
+      for (const socio of socios) {
+        const retiros = await fetch(`${API}/retiros/socio/${socio.id}/${anio}/${mes}`).then(r => r.json());
+        const total = retiros.reduce((s, r) => s + r.monto, 0);
+        const filas = retiros.length
+          ? retiros.map(r => `<tr>
+          <td style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-soft)">${r.fecha ? r.fecha.substring(0, 10) : '—'}</td>
           <td style="padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;text-align:right" class="mono">${formatPeso(r.monto)}</td>
         </tr>`).join('')
-      : `<tr><td colspan="2" style="padding:14px;text-align:center;font-size:12px;color:var(--text-soft)">Sin retiros este mes</td></tr>`;
-    tarjetas.push(`
+          : `<tr><td colspan="2" style="padding:14px;text-align:center;font-size:12px;color:var(--text-soft)">Sin retiros este mes</td></tr>`;
+        tarjetas.push(`
       <div class="card" style="padding:0;overflow:hidden;min-width:0;">
         <div style="padding:12px 14px;border-bottom:1px solid var(--border)"><span style="font-weight:600;font-size:14px">${socio.nombre}</span></div>
         <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
@@ -876,198 +1746,198 @@ async function cargarRetirosPorSocio() {
         </table>
         </div>
       </div>`);
-  }
-  container.innerHTML = tarjetas.join('');
-}
-async function cargarPagos() {
-  const tbody = document.getElementById('tabla-pagos');
-  tbody.innerHTML = '<tr><td colspan="5" class="empty">Cargando...</td></tr>';
-  try {
-    const mes = document.getElementById('fp-mes').value;
-    const anioRaw = document.getElementById('fp-anio').value.trim();
-    const anio = anioRaw.length === 4 ? anioRaw : new Date().getFullYear().toString();
-    const contrato = document.getElementById('fp-contrato').value;
-    let url;
-    if (contrato && mes) {
-      url = `${API}/movimientos/contrato/${contrato}/${anio}/${mes}`;
-    } else if (mes) {
-      url = `${API}/movimientos/ingresos/${anio}/${mes}`;
-    } else if (anioRaw.length === 4) {
-      url = `${API}/movimientos/ingresos/${anio}`;
-    } else {
-      url = `${API}/movimientos`;
+      }
+      container.innerHTML = tarjetas.join('');
     }
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    const lista = Array.isArray(data) ? data.filter(m => m.esIngreso !== false) : [];
-    if (!lista.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">No hay pagos</td></tr>'; return; }
-    tbody.innerHTML = lista.map(m => {
-      const c = contratos.find(c => c.id === m.idContrato);
-      return `<tr>
+    async function cargarPagos() {
+      const tbody = document.getElementById('tabla-pagos');
+      tbody.innerHTML = '<tr><td colspan="5" class="empty">Cargando...</td></tr>';
+      try {
+        const mes = document.getElementById('fp-mes').value;
+        const anioRaw = document.getElementById('fp-anio').value.trim();
+        const anio = anioRaw.length === 4 ? anioRaw : new Date().getFullYear().toString();
+        const contrato = document.getElementById('fp-contrato').value;
+        let url;
+        if (contrato && mes) {
+          url = `${API}/movimientos/contrato/${contrato}/${anio}/${mes}`;
+        } else if (mes) {
+          url = `${API}/movimientos/ingresos/${anio}/${mes}`;
+        } else if (anioRaw.length === 4) {
+          url = `${API}/movimientos/ingresos/${anio}`;
+        } else {
+          url = `${API}/movimientos`;
+        }
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const lista = Array.isArray(data) ? data.filter(m => m.esIngreso !== false) : [];
+        if (!lista.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">No hay pagos</td></tr>'; return; }
+        tbody.innerHTML = lista.map(m => {
+          const c = contratos.find(c => c.id === m.idContrato);
+          return `<tr>
         <td>${m.fecha || '—'}</td>
         <td>${c ? `#${c.id} — ${nombrePropiedad(c.idPropiedad)}` : '—'}</td>
         <td>${m.concepto || '—'}</td>
         <td class="mono">${formatPeso(m.monto)}</td>
         <td><button class="btn btn-danger" onclick="eliminarMovimiento(${m.id})">Eliminar</button></td>
       </tr>`;
-    }).join('');
-  } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty" style="color:var(--danger)">Error: ${e.message}</td></tr>`;
-  }
-}
-
-// GASTOS
-async function cargarGastos() {
-  const tbody = document.getElementById('tabla-gastos');
-  tbody.innerHTML = '<tr><td colspan="4" class="empty">Cargando...</td></tr>';
-  try {
-    const mes = document.getElementById('fg-mes').value;
-    const anioRaw = document.getElementById('fg-anio').value.trim();
-    const anio = anioRaw.length === 4 ? anioRaw : new Date().getFullYear().toString();
-    let url;
-    if (mes) {
-      url = `${API}/movimientos/gastos/${anio}/${mes}`;
-    } else if (anioRaw.length === 4) {
-      url = `${API}/movimientos/gastos/${anio}`;
-    } else {
-      url = `${API}/movimientos`;
+        }).join('');
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="5" class="empty" style="color:var(--danger)">Error: ${e.message}</td></tr>`;
+      }
     }
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    const lista = Array.isArray(data) ? (url.includes('/gastos/') ? data : data.filter(m => !m.esIngreso)) : [];
-    if (!lista.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty">No hay gastos</td></tr>'; return; }
-    tbody.innerHTML = lista.map(m => `<tr>
+
+    // GASTOS
+    async function cargarGastos() {
+      const tbody = document.getElementById('tabla-gastos');
+      tbody.innerHTML = '<tr><td colspan="4" class="empty">Cargando...</td></tr>';
+      try {
+        const mes = document.getElementById('fg-mes').value;
+        const anioRaw = document.getElementById('fg-anio').value.trim();
+        const anio = anioRaw.length === 4 ? anioRaw : new Date().getFullYear().toString();
+        let url;
+        if (mes) {
+          url = `${API}/movimientos/gastos/${anio}/${mes}`;
+        } else if (anioRaw.length === 4) {
+          url = `${API}/movimientos/gastos/${anio}`;
+        } else {
+          url = `${API}/movimientos`;
+        }
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const lista = Array.isArray(data) ? (url.includes('/gastos/') ? data : data.filter(m => !m.esIngreso)) : [];
+        if (!lista.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty">No hay gastos</td></tr>'; return; }
+        tbody.innerHTML = lista.map(m => `<tr>
       <td>${m.fecha || '—'}</td>
       <td>${m.concepto || '—'}</td>
       <td class="mono">${formatPeso(m.monto)}</td>
       <td><button class="btn btn-danger" onclick="eliminarMovimiento(${m.id})">Eliminar</button></td>
     </tr>`).join('');
-  } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="4" class="empty" style="color:var(--danger)">Error: ${e.message}</td></tr>`;
-  }
-}
-
-// RETIROS
-async function cargarRetiros() {
-  const tbody = document.getElementById('tabla-retiros');
-  tbody.innerHTML = '<tr><td colspan="5" class="empty">Cargando...</td></tr>';
-  try {
-    const mes = document.getElementById('fr-mes').value;
-    const anioRaw = document.getElementById('fr-anio').value.trim();
-    const anio = anioRaw.length === 4 ? anioRaw : new Date().getFullYear().toString();
-    const socio = document.getElementById('fr-socio').value;
-    let url;
-    if (socio && mes) {
-      url = `${API}/retiros/socio/${socio}/${anio}/${mes}`;
-    } else if (mes) {
-      url = `${API}/retiros/mes/${anio}/${mes}`;
-    } else if (socio && anioRaw.length === 4) {
-      url = `${API}/retiros/socio/${socio}`;
-    } else if (anioRaw.length === 4) {
-      url = `${API}/retiros/anio/${anio}`;
-    } else {
-      url = `${API}/retiros`;
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="4" class="empty" style="color:var(--danger)">Error: ${e.message}</td></tr>`;
+      }
     }
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    const lista = Array.isArray(data) ? data : [];
-    if (!lista.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">No hay retiros</td></tr>'; return; }
-    tbody.innerHTML = lista.map(r => `<tr>
-      <td>${r.fecha ? r.fecha.substring(0,10) : '—'}</td>
+
+    // RETIROS
+    async function cargarRetiros() {
+      const tbody = document.getElementById('tabla-retiros');
+      tbody.innerHTML = '<tr><td colspan="5" class="empty">Cargando...</td></tr>';
+      try {
+        const mes = document.getElementById('fr-mes').value;
+        const anioRaw = document.getElementById('fr-anio').value.trim();
+        const anio = anioRaw.length === 4 ? anioRaw : new Date().getFullYear().toString();
+        const socio = document.getElementById('fr-socio').value;
+        let url;
+        if (socio && mes) {
+          url = `${API}/retiros/socio/${socio}/${anio}/${mes}`;
+        } else if (mes) {
+          url = `${API}/retiros/mes/${anio}/${mes}`;
+        } else if (socio && anioRaw.length === 4) {
+          url = `${API}/retiros/socio/${socio}`;
+        } else if (anioRaw.length === 4) {
+          url = `${API}/retiros/anio/${anio}`;
+        } else {
+          url = `${API}/retiros`;
+        }
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const lista = Array.isArray(data) ? data : [];
+        if (!lista.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">No hay retiros</td></tr>'; return; }
+        tbody.innerHTML = lista.map(r => `<tr>
+      <td>${r.fecha ? r.fecha.substring(0, 10) : '—'}</td>
       <td>${nombreSocio(r.idSocio)}</td>
       <td class="mono">${formatPeso(r.monto)}</td>
       <td>${r.observacion || '—'}</td>
       <td><button class="btn btn-danger" onclick="eliminarRetiro(${r.id})">Eliminar</button></td>
     </tr>`).join('');
-  } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty" style="color:var(--danger)">Error: ${e.message}</td></tr>`;
-  }
-}
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="5" class="empty" style="color:var(--danger)">Error: ${e.message}</td></tr>`;
+      }
+    }
 
-async function registrarPago() {
-  const body = {
-    idContrato: parseInt(document.getElementById('pago-contrato').value),
-    concepto: document.getElementById('pago-concepto').value,
-    monto: parseFloat(document.getElementById('pago-monto').value),
-    fecha: document.getElementById('pago-fecha').value,
-    esIngreso: true,
-    mesReferencia: parseInt(document.getElementById('pago-mes-ref').value),
-    anioReferencia: parseInt(document.getElementById('pago-anio-ref').value)
-  };
-  await fetch(`${API}/movimientos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-  closeModal('modal-pago'); cargarPagos(); cargarResumen();
-}
+    async function registrarPago() {
+      const body = {
+        idContrato: parseInt(document.getElementById('pago-contrato').value),
+        concepto: document.getElementById('pago-concepto').value,
+        monto: parseFloat(document.getElementById('pago-monto').value),
+        fecha: document.getElementById('pago-fecha').value,
+        esIngreso: true,
+        mesReferencia: parseInt(document.getElementById('pago-mes-ref').value),
+        anioReferencia: parseInt(document.getElementById('pago-anio-ref').value)
+      };
+      await fetch(`${API}/movimientos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      closeModal('modal-pago'); cargarPagos(); cargarResumen();
+    }
 
-async function eliminarMovimiento(id) {
-  if (!confirm('¿Eliminar este registro?')) return;
-  await fetch(`${API}/movimientos/${id}`, { method: 'DELETE' });
-  cargarPagos(); cargarGastos(); cargarResumen();
-}
-
-
-
-async function registrarGasto() {
-  const body = {
-    concepto: document.getElementById('gasto-concepto').value,
-    monto: parseFloat(document.getElementById('gasto-monto').value),
-    fecha: document.getElementById('gasto-fecha').value,
-    mesReferencia: parseInt(document.getElementById('gasto-mes-ref').value),
-    anioReferencia: parseInt(document.getElementById('gasto-anio-ref').value)
-  };
-  await fetch(`${API}/movimientos/gasto`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-  closeModal('modal-gasto'); cargarGastos(); cargarResumen();
-}
-
-// RETIROS
+    async function eliminarMovimiento(id) {
+      if (!confirm('¿Eliminar este registro?')) return;
+      await fetch(`${API}/movimientos/${id}`, { method: 'DELETE' });
+      cargarPagos(); cargarGastos(); cargarResumen();
+    }
 
 
-async function registrarRetiro() {
-  const body = {
-    idSocio: parseInt(document.getElementById('retiro-socio').value),
-    monto: parseFloat(document.getElementById('retiro-monto').value),
-    observacion: document.getElementById('retiro-observacion').value,
-    mesReferencia: parseInt(document.getElementById('retiro-mes-ref').value),
-    anioReferencia: parseInt(document.getElementById('retiro-anio-ref').value)
-  };
-  await fetch(`${API}/retiros`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-  closeModal('modal-retiro'); cargarRetiros(); cargarResumen();
-}
 
-async function eliminarRetiro(id) {
-  if (!confirm('¿Eliminar este retiro?')) return;
-  await fetch(`${API}/retiros/${id}`, { method: 'DELETE' });
-  cargarRetiros(); cargarResumen();
-}
+    async function registrarGasto() {
+      const body = {
+        concepto: document.getElementById('gasto-concepto').value,
+        monto: parseFloat(document.getElementById('gasto-monto').value),
+        fecha: document.getElementById('gasto-fecha').value,
+        mesReferencia: parseInt(document.getElementById('gasto-mes-ref').value),
+        anioReferencia: parseInt(document.getElementById('gasto-anio-ref').value)
+      };
+      await fetch(`${API}/movimientos/gasto`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      closeModal('modal-gasto'); cargarGastos(); cargarResumen();
+    }
 
-                                                                            // CONTRATOS
+    // RETIROS
 
 
-function calcularProximoAjuste(c) {
-  if (!c.periodicidadMeses || !c.ultimoAjuste) return null;
-  const ultimo = new Date(c.ultimoAjuste);
-  ultimo.setMonth(ultimo.getMonth() + c.periodicidadMeses);
-  return ultimo;
-}
+    async function registrarRetiro() {
+      const body = {
+        idSocio: parseInt(document.getElementById('retiro-socio').value),
+        monto: parseFloat(document.getElementById('retiro-monto').value),
+        observacion: document.getElementById('retiro-observacion').value,
+        mesReferencia: parseInt(document.getElementById('retiro-mes-ref').value),
+        anioReferencia: parseInt(document.getElementById('retiro-anio-ref').value)
+      };
+      await fetch(`${API}/retiros`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      closeModal('modal-retiro'); cargarRetiros(); cargarResumen();
+    }
 
-function badgeAjuste(c) {
-  const proximo = calcularProximoAjuste(c);
-  if (!proximo) return `<span class="badge" style="background:var(--surface-2);color:var(--text-muted);cursor:pointer" onclick="abrirPeriodicidad(${c.id})">Sin periodicidad</span>`;
-  const hoy = new Date(); hoy.setHours(0,0,0,0);
-  const dias = Math.ceil((proximo - hoy) / 86400000);
-  const fecha = proximo.toLocaleDateString('es-AR', { day:'2-digit', month:'short', year:'numeric' });
-  if (dias < 0)   return `<span class="badge badge-red" style="cursor:pointer" onclick="abrirAjuste(${c.id})" title="Vencido hace ${Math.abs(dias)} días">⚠ ${fecha}</span>`;
-  if (dias <= 30) return `<span class="badge" style="background:#fff3cd;color:#856404;cursor:pointer" onclick="abrirAjuste(${c.id})" title="${dias} días para el ajuste">🔔 ${fecha}</span>`;
-  return `<span class="badge badge-green" style="cursor:pointer" onclick="abrirAjuste(${c.id})">${fecha}</span>`;
-}
+    async function eliminarRetiro(id) {
+      if (!confirm('¿Eliminar este retiro?')) return;
+      await fetch(`${API}/retiros/${id}`, { method: 'DELETE' });
+      cargarRetiros(); cargarResumen();
+    }
 
-async function cargarContratos() {
-  const data = await fetch(`${API}/contratos`).then(r => r.json());
-  const tbody = document.getElementById('tabla-contratos');
-  if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">No hay contratos activos</td></tr>'; return; }
-  tbody.innerHTML = data.map(c => `<tr>
+    // CONTRATOS
+
+
+    function calcularProximoAjuste(c) {
+      if (!c.periodicidadMeses || !c.ultimoAjuste) return null;
+      const ultimo = new Date(c.ultimoAjuste);
+      ultimo.setMonth(ultimo.getMonth() + c.periodicidadMeses);
+      return ultimo;
+    }
+
+    function badgeAjuste(c) {
+      const proximo = calcularProximoAjuste(c);
+      if (!proximo) return `<span class="badge" style="background:var(--surface-2);color:var(--text-muted);cursor:pointer" onclick="abrirPeriodicidad(${c.id})">Sin periodicidad</span>`;
+      const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+      const dias = Math.ceil((proximo - hoy) / 86400000);
+      const fecha = proximo.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
+      if (dias < 0) return `<span class="badge badge-red" style="cursor:pointer" onclick="abrirAjuste(${c.id})" title="Vencido hace ${Math.abs(dias)} días">⚠ ${fecha}</span>`;
+      if (dias <= 30) return `<span class="badge" style="background:#fff3cd;color:#856404;cursor:pointer" onclick="abrirAjuste(${c.id})" title="${dias} días para el ajuste">🔔 ${fecha}</span>`;
+      return `<span class="badge badge-green" style="cursor:pointer" onclick="abrirAjuste(${c.id})">${fecha}</span>`;
+    }
+
+    async function cargarContratos() {
+      const data = await fetch(`${API}/contratos`).then(r => r.json());
+      const tbody = document.getElementById('tabla-contratos');
+      if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">No hay contratos activos</td></tr>'; return; }
+      tbody.innerHTML = data.map(c => `<tr>
     <td>#${c.id}</td>
     <td>${nombrePropiedad(c.idPropiedad)}</td>
     <td>${nombreInquilino(c.idInquilino)}</td>
@@ -1075,75 +1945,75 @@ async function cargarContratos() {
     <td class="mono">${formatPeso(c.montoBase)}</td>
     <td>${badgeAjuste(c)}</td>
     <td>${c.archivoPdfRuta
-      ? `<a href="${c.archivoPdfRuta}" target="_blank" class="btn btn-secondary" style="padding:3px 10px;font-size:12px">📄 Ver</a>
+          ? `<a href="${c.archivoPdfRuta}" target="_blank" class="btn btn-secondary" style="padding:3px 10px;font-size:12px">📄 Ver</a>
          <button class="btn btn-danger" style="padding:3px 8px;font-size:12px" onclick="eliminarArchivo(${c.id})">✕</button>`
-      : `<label class="btn btn-secondary" style="padding:3px 10px;font-size:12px;cursor:pointer">
+          : `<label class="btn btn-secondary" style="padding:3px 10px;font-size:12px;cursor:pointer">
            📎 Subir<input type="file" style="display:none" accept=".doc,.docx,.pdf" onchange="subirArchivo(${c.id}, this)">
          </label>`
-    }</td>
+        }</td>
     <td>
       <button class="btn btn-secondary" style="font-size:12px;padding:4px 10px" onclick="abrirEditarContrato(${c.id})">Editar</button>
-      ${c.activo 
-      ? `<button class="btn btn-danger" onclick="desactivarContrato(${c.id})">Desactivar</button>`
-      : `<button class="btn btn-success" onclick="activarContrato(${c.id})">Activar</button>`}
+      ${c.activo
+          ? `<button class="btn btn-danger" onclick="desactivarContrato(${c.id})">Desactivar</button>`
+          : `<button class="btn btn-success" onclick="activarContrato(${c.id})">Activar</button>`}
     </td>
   </tr>`).join('');
-  contratos = data;
-  await cargarAlertasAjuste();
-}
+      contratos = data;
+      await cargarAlertasAjuste();
+    }
 
-async function desactivarContrato(id) {
-  if (!confirm('¿Desactivar este contrato?')) return;
-  await fetch(`${API}/contratos/${id}/desactivar`, { method: 'PUT' });
-  await cargarDatosBase();
-  cargarContratos();
-}
+    async function desactivarContrato(id) {
+      if (!confirm('¿Desactivar este contrato?')) return;
+      await fetch(`${API}/contratos/${id}/desactivar`, { method: 'PUT' });
+      await cargarDatosBase();
+      cargarContratos();
+    }
 
-async function activarContrato(id) {
-  await fetch(`${API}/contratos/${id}/activar`, { method: 'PUT' });
-  await cargarDatosBase();
-  cargarContratos();
-}
+    async function activarContrato(id) {
+      await fetch(`${API}/contratos/${id}/activar`, { method: 'PUT' });
+      await cargarDatosBase();
+      cargarContratos();
+    }
 
-function abrirEditarContrato(id) {
-  const c = contratos.find(x => x.id === id);
-  if (!c) return;
-  llenarSelect('edit-cont-propiedad', todasPropiedades, p => `${p.nombre} — ${p.direccion}`, p => p.id);
-  llenarSelect('edit-cont-inquilino', todosInquilinos, i => `${i.nombre} (DNI: ${i.documento})`, i => i.id);
-  document.getElementById('edit-cont-id').value = id;
-  document.getElementById('edit-cont-propiedad').value = c.idPropiedad;
-  document.getElementById('edit-cont-inquilino').value = c.idInquilino;
-  document.getElementById('edit-cont-inicio').value = c.fechaInicio;
-  document.getElementById('edit-cont-fin').value = c.fechaFin;
-  document.getElementById('edit-cont-monto').value = c.montoBase;
-  document.getElementById('edit-cont-deposito').value = c.deposito;
-  openModal('modal-editar-contrato');
-}
+    function abrirEditarContrato(id) {
+      const c = contratos.find(x => x.id === id);
+      if (!c) return;
+      llenarSelect('edit-cont-propiedad', todasPropiedades, p => `${p.nombre} — ${p.direccion}`, p => p.id);
+      llenarSelect('edit-cont-inquilino', todosInquilinos, i => `${i.nombre} (DNI: ${i.documento})`, i => i.id);
+      document.getElementById('edit-cont-id').value = id;
+      document.getElementById('edit-cont-propiedad').value = c.idPropiedad;
+      document.getElementById('edit-cont-inquilino').value = c.idInquilino;
+      document.getElementById('edit-cont-inicio').value = c.fechaInicio;
+      document.getElementById('edit-cont-fin').value = c.fechaFin;
+      document.getElementById('edit-cont-monto').value = c.montoBase;
+      document.getElementById('edit-cont-deposito').value = c.deposito;
+      openModal('modal-editar-contrato');
+    }
 
-async function guardarEdicionContrato() {
-  const id = document.getElementById('edit-cont-id').value;
-  const body = {
-    idPropiedad: parseInt(document.getElementById('edit-cont-propiedad').value),
-    idInquilino: parseInt(document.getElementById('edit-cont-inquilino').value),
-    fechaInicio: document.getElementById('edit-cont-inicio').value,
-    fechaFin: document.getElementById('edit-cont-fin').value,
-    montoBase: parseFloat(document.getElementById('edit-cont-monto').value),
-    deposito: parseFloat(document.getElementById('edit-cont-deposito').value)
-  };
-  await fetch(`${API}/contratos/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-  closeModal('modal-editar-contrato');
-  await cargarDatosBase();
-  cargarContratos();
-}
+    async function guardarEdicionContrato() {
+      const id = document.getElementById('edit-cont-id').value;
+      const body = {
+        idPropiedad: parseInt(document.getElementById('edit-cont-propiedad').value),
+        idInquilino: parseInt(document.getElementById('edit-cont-inquilino').value),
+        fechaInicio: document.getElementById('edit-cont-inicio').value,
+        fechaFin: document.getElementById('edit-cont-fin').value,
+        montoBase: parseFloat(document.getElementById('edit-cont-monto').value),
+        deposito: parseFloat(document.getElementById('edit-cont-deposito').value)
+      };
+      await fetch(`${API}/contratos/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      closeModal('modal-editar-contrato');
+      await cargarDatosBase();
+      cargarContratos();
+    }
 
-// PANEL DE ALERTAS
-async function cargarAlertasAjuste() {
-  const panel = document.getElementById('panel-alertas');
-  try {
-    const proximos = await fetch(`${API}/contratos/proximos-ajuste?dias=30`).then(r => r.json());
-    if (!proximos.length) { panel.style.display = 'none'; return; }
-    panel.style.display = 'block';
-    panel.innerHTML = `
+    // PANEL DE ALERTAS
+    async function cargarAlertasAjuste() {
+      const panel = document.getElementById('panel-alertas');
+      try {
+        const proximos = await fetch(`${API}/contratos/proximos-ajuste?dias=30`).then(r => r.json());
+        if (!proximos.length) { panel.style.display = 'none'; return; }
+        panel.style.display = 'block';
+        panel.innerHTML = `
       <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:10px;padding:16px;">
         <div style="font-weight:700;color:#856404;margin-bottom:10px;font-size:15px;">
           🔔 ${proximos.length} contrato${proximos.length > 1 ? 's' : ''} próximo${proximos.length > 1 ? 's' : ''} a actualizar
@@ -1151,7 +2021,7 @@ async function cargarAlertasAjuste() {
         ${proximos.map(c => {
           const proximo = calcularProximoAjuste(c);
           const dias = proximo ? Math.ceil((proximo - new Date()) / 86400000) : null;
-          const fecha = proximo ? proximo.toLocaleDateString('es-AR', { day:'2-digit', month:'long', year:'numeric' }) : '—';
+          const fecha = proximo ? proximo.toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
           const label = dias !== null ? (dias <= 0 ? 'Vencido hace ' + Math.abs(dias) + ' días' : 'en ' + dias + ' días') : '';
           return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid #fde68a;">' +
             '<div>' +
@@ -1164,155 +2034,162 @@ async function cargarAlertasAjuste() {
             '</div>';
         }).join('')}
       </div>`;
-  } catch(e) { panel.style.display = 'none'; }
-}
-
-// MODAL AJUSTAR MONTO
-function abrirAjuste(idContrato) {
-  const c = contratos.find(x => x.id === idContrato);
-  if (!c) return;
-  document.getElementById('ajuste-id-contrato').value = idContrato;
-  document.getElementById('ajuste-info-contrato').textContent = '#' + c.id + ' — ' + nombrePropiedad(c.idPropiedad) + ' / ' + nombreInquilino(c.idInquilino);
-  document.getElementById('ajuste-monto-actual').textContent = formatPeso(c.montoBase);
-  document.getElementById('ajuste-nuevo-monto').value = '';
-  document.getElementById('ajuste-fecha').value = new Date().toISOString().split('T')[0];
-  openModal('modal-ajuste');
-}
-
-async function confirmarAjuste() {
-  const id = document.getElementById('ajuste-id-contrato').value;
-  const nuevoMonto = document.getElementById('ajuste-nuevo-monto').value;
-  const fechaAjuste = document.getElementById('ajuste-fecha').value;
-  if (!nuevoMonto || !fechaAjuste) { alert('Completá el nuevo monto y la fecha'); return; }
-  await fetch(`${API}/contratos/${id}/ajuste`, {
-    method: 'PUT', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nuevoMonto, fechaAjuste })
-  });
-  closeModal('modal-ajuste'); await cargarDatosBase(); cargarContratos();
-}
-
-// MODAL CONFIGURAR PERIODICIDAD
-function abrirPeriodicidad(idContrato) {
-  const c = contratos.find(x => x.id === idContrato);
-  if (!c) return;
-  document.getElementById('per-id-contrato').value = idContrato;
-  document.getElementById('per-info-contrato').textContent = '#' + c.id + ' — ' + nombrePropiedad(c.idPropiedad) + ' / ' + nombreInquilino(c.idInquilino);
-  document.getElementById('per-meses').value = c.periodicidadMeses || 3;
-  document.getElementById('per-ultimo-ajuste').value = c.ultimoAjuste || c.fechaInicio;
-  openModal('modal-periodicidad');
-}
-
-// ─── ARCHIVOS ────────────────────────────────────────────────────────────────
-async function subirArchivo(idContrato, input) {
-  const archivo = input.files[0];
-  if (!archivo) return;
-  const label = input.parentElement;
-  label.textContent = 'Subiendo...';
-  try {
-    const formData = new FormData();
-    formData.append('archivo', archivo);
-    const res = await fetch(`${API}/contratos/${idContrato}/upload`, {
-      method: 'POST',
-      body: formData
-    });
-    const data = await res.json();
-    if (data.ok) {
-      await cargarDatosBase();
-      cargarContratos();
-    } else {
-      alert('Error al subir: ' + data.mensaje);
-      label.innerHTML = '📎 Subir<input type="file" style="display:none" accept=".doc,.docx,.pdf" onchange="subirArchivo(' + idContrato + ', this)">';
+      } catch (e) { panel.style.display = 'none'; }
     }
-  } catch(e) {
-    alert('Error: ' + e.message);
-  }
-}
 
-async function eliminarArchivo(idContrato) {
-  if (!confirm('¿Eliminar el archivo de este contrato?')) return;
-  try {
-    const res = await fetch(`${API}/contratos/${idContrato}/archivo`, { method: 'DELETE' });
-    const data = await res.json();
-    if (data.ok) { await cargarDatosBase(); cargarContratos(); }
-    else alert('Error: ' + data.mensaje);
-  } catch(e) {
-    alert('Error: ' + e.message);
-  }
-}
+    // MODAL AJUSTAR MONTO
+    function abrirAjuste(idContrato) {
+      const c = contratos.find(x => x.id === idContrato);
+      if (!c) return;
+      document.getElementById('ajuste-id-contrato').value = idContrato;
+      document.getElementById('ajuste-info-contrato').textContent = '#' + c.id + ' — ' + nombrePropiedad(c.idPropiedad) + ' / ' + nombreInquilino(c.idInquilino);
+      document.getElementById('ajuste-monto-actual').textContent = formatPeso(c.montoBase);
+      document.getElementById('ajuste-nuevo-monto').value = '';
+      document.getElementById('ajuste-fecha').value = new Date().toISOString().split('T')[0];
+      openModal('modal-ajuste');
+    }
 
-async function confirmarPeriodicidad() {
-  const id = document.getElementById('per-id-contrato').value;
-  const periodicidadMeses = document.getElementById('per-meses').value;
-  const ultimoAjuste = document.getElementById('per-ultimo-ajuste').value;
-  if (!periodicidadMeses || !ultimoAjuste) { alert('Completá todos los campos'); return; }
-  await fetch(`${API}/contratos/${id}/periodicidad`, {
-    method: 'PUT', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ periodicidadMeses, ultimoAjuste })
-  });
-  closeModal('modal-periodicidad'); await cargarDatosBase(); cargarContratos();
-}
+    async function confirmarAjuste() {
+      const id = document.getElementById('ajuste-id-contrato').value;
+      const nuevoMonto = document.getElementById('ajuste-nuevo-monto').value;
+      const fechaAjuste = document.getElementById('ajuste-fecha').value;
+      const periodicidad = document.getElementById('ajuste-periodicidad').value;
+      if (!nuevoMonto || !fechaAjuste) { alert('Completá el nuevo monto y la fecha'); return; }
+      await fetch(`${API}/contratos/${id}/ajuste`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nuevoMonto, fechaAjuste })
+      });
+      if (periodicidad) {
+        await fetch(`${API}/contratos/${id}/periodicidad`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ periodicidadMeses: periodicidad, ultimoAjuste: fechaAjuste })
+        });
+      }
+      closeModal('modal-ajuste'); await cargarDatosBase(); cargarContratos();
+    }
 
-async function registrarContrato() {
-  const body = { idPropiedad: parseInt(document.getElementById('contrato-propiedad').value), idInquilino: parseInt(document.getElementById('contrato-inquilino').value), fechaInicio: document.getElementById('contrato-inicio').value, fechaFin: document.getElementById('contrato-fin').value, montoBase: parseFloat(document.getElementById('contrato-monto').value), deposito: parseFloat(document.getElementById('contrato-deposito').value) };
-  await fetch(`${API}/contratos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-  closeModal('modal-contrato'); await cargarDatosBase(); cargarContratos();
-}
+    // MODAL CONFIGURAR PERIODICIDAD
+    function abrirPeriodicidad(idContrato) {
+      const c = contratos.find(x => x.id === idContrato);
+      if (!c) return;
+      document.getElementById('per-id-contrato').value = idContrato;
+      document.getElementById('per-info-contrato').textContent = '#' + c.id + ' — ' + nombrePropiedad(c.idPropiedad) + ' / ' + nombreInquilino(c.idInquilino);
+      document.getElementById('per-meses').value = c.periodicidadMeses || 3;
+      document.getElementById('per-ultimo-ajuste').value = c.ultimoAjuste || c.fechaInicio;
+      openModal('modal-periodicidad');
+    }
 
-// PROPIEDADES
-function filtrarPropiedades(filtro, el) {
-  filtroProp = filtro;
-  document.querySelectorAll('#section-propiedades .tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active'); renderPropiedades();
-}
+    // ─── ARCHIVOS ────────────────────────────────────────────────────────────────
+    async function subirArchivo(idContrato, input) {
+      const archivo = input.files[0];
+      if (!archivo) return;
+      const label = input.parentElement;
+      label.textContent = 'Subiendo...';
+      try {
+        const formData = new FormData();
+        formData.append('archivo', archivo);
+        const res = await fetch(`${API}/contratos/${idContrato}/upload`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.ok) {
+          await cargarDatosBase();
+          cargarContratos();
+        } else {
+          alert('Error al subir: ' + data.mensaje);
+          label.innerHTML = '📎 Subir<input type="file" style="display:none" accept=".doc,.docx,.pdf" onchange="subirArchivo(' + idContrato + ', this)">';
+        }
+      } catch (e) {
+        alert('Error: ' + e.message);
+      }
+    }
 
-function renderPropiedades() {
-  let lista = todasPropiedades;
-  if (filtroProp === 'activas') lista = lista.filter(p => p.activo);
-  if (filtroProp === 'inactivas') lista = lista.filter(p => !p.activo);
-  const tbody = document.getElementById('tabla-propiedades');
-  if (!lista.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">No hay propiedades</td></tr>'; return; }
-  tbody.innerHTML = lista.map(p => `<tr>
+    async function eliminarArchivo(idContrato) {
+      if (!confirm('¿Eliminar el archivo de este contrato?')) return;
+      try {
+        const res = await fetch(`${API}/contratos/${idContrato}/archivo`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.ok) { await cargarDatosBase(); cargarContratos(); }
+        else alert('Error: ' + data.mensaje);
+      } catch (e) {
+        alert('Error: ' + e.message);
+      }
+    }
+
+    async function confirmarPeriodicidad() {
+      const id = document.getElementById('per-id-contrato').value;
+      const periodicidadMeses = document.getElementById('per-meses').value;
+      const ultimoAjuste = document.getElementById('per-ultimo-ajuste').value;
+      if (!periodicidadMeses || !ultimoAjuste) { alert('Completá todos los campos'); return; }
+      await fetch(`${API}/contratos/${id}/periodicidad`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ periodicidadMeses, ultimoAjuste })
+      });
+      closeModal('modal-periodicidad'); await cargarDatosBase(); cargarContratos();
+    }
+
+    async function registrarContrato() {
+      const body = { idPropiedad: parseInt(document.getElementById('contrato-propiedad').value), idInquilino: parseInt(document.getElementById('contrato-inquilino').value), fechaInicio: document.getElementById('contrato-inicio').value, fechaFin: document.getElementById('contrato-fin').value, montoBase: parseFloat(document.getElementById('contrato-monto').value), deposito: parseFloat(document.getElementById('contrato-deposito').value) };
+      await fetch(`${API}/contratos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      closeModal('modal-contrato'); await cargarDatosBase(); cargarContratos();
+    }
+
+    // PROPIEDADES
+    function filtrarPropiedades(filtro, el) {
+      filtroProp = filtro;
+      document.querySelectorAll('#section-propiedades .tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active'); renderPropiedades();
+    }
+
+    function renderPropiedades() {
+      let lista = todasPropiedades;
+      if (filtroProp === 'activas') lista = lista.filter(p => p.activo);
+      if (filtroProp === 'inactivas') lista = lista.filter(p => !p.activo);
+      const tbody = document.getElementById('tabla-propiedades');
+      if (!lista.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">No hay propiedades</td></tr>'; return; }
+      tbody.innerHTML = lista.map(p => `<tr>
     <td>${p.nombre}</td><td>${p.direccion}</td><td>${p.tipo}</td>
     <td><span class="badge ${p.activo ? 'badge-green' : 'badge-red'}">${p.activo ? 'Activa' : 'Inactiva'}</span></td>
     <td>${p.activo ? `<button class="btn btn-danger" onclick="desactivarPropiedad(${p.id})">Desactivar</button>` : `<button class="btn btn-success" onclick="activarPropiedad(${p.id})">Activar</button>`}</td>
   </tr>`).join('');
-}
+    }
 
-async function registrarPropiedad() {
-  const body = { nombre: document.getElementById('prop-nombre').value, direccion: document.getElementById('prop-direccion').value, tipo: document.getElementById('prop-tipo').value };
-  await fetch(`${API}/propiedades`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-  closeModal('modal-propiedad');
-  todasPropiedades = await fetch(`${API}/propiedades`).then(r => r.json());
-  renderPropiedades();
-}
+    async function registrarPropiedad() {
+      const body = { nombre: document.getElementById('prop-nombre').value, direccion: document.getElementById('prop-direccion').value, tipo: document.getElementById('prop-tipo').value };
+      await fetch(`${API}/propiedades`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      closeModal('modal-propiedad');
+      todasPropiedades = await fetch(`${API}/propiedades`).then(r => r.json());
+      renderPropiedades();
+    }
 
-async function desactivarPropiedad(id) {
-  if (!confirm('¿Desactivar esta propiedad?')) return;
-  await fetch(`${API}/propiedades/${id}/desactivar`, { method: 'PUT' });
-  todasPropiedades = await fetch(`${API}/propiedades`).then(r => r.json());
-  renderPropiedades();
-}
+    async function desactivarPropiedad(id) {
+      if (!confirm('¿Desactivar esta propiedad?')) return;
+      await fetch(`${API}/propiedades/${id}/desactivar`, { method: 'PUT' });
+      todasPropiedades = await fetch(`${API}/propiedades`).then(r => r.json());
+      renderPropiedades();
+    }
 
-async function activarPropiedad(id) {
-  await fetch(`${API}/propiedades/${id}/activar`, { method: 'PUT' });
-  todasPropiedades = await fetch(`${API}/propiedades`).then(r => r.json());
-  renderPropiedades();
-}
+    async function activarPropiedad(id) {
+      await fetch(`${API}/propiedades/${id}/activar`, { method: 'PUT' });
+      todasPropiedades = await fetch(`${API}/propiedades`).then(r => r.json());
+      renderPropiedades();
+    }
 
-// INQUILINOS
-function filtrarInquilinos(filtro, el) {
-  filtroInq = filtro;
-  document.querySelectorAll('#section-inquilinos .tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active'); renderInquilinos();
-}
+    // INQUILINOS
+    function filtrarInquilinos(filtro, el) {
+      filtroInq = filtro;
+      document.querySelectorAll('#section-inquilinos .tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active'); renderInquilinos();
+    }
 
-function renderInquilinos() {
-  let lista = todosInquilinos;
-  if (filtroInq === 'activos') lista = lista.filter(i => i.activo);
-  if (filtroInq === 'inactivos') lista = lista.filter(i => !i.activo);
-  const tbody = document.getElementById('tabla-inquilinos');
-  if (!lista.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">No hay inquilinos</td></tr>'; return; }
-  tbody.innerHTML = lista.map(i => `<tr>
+    function renderInquilinos() {
+      let lista = todosInquilinos;
+      if (filtroInq === 'activos') lista = lista.filter(i => i.activo);
+      if (filtroInq === 'inactivos') lista = lista.filter(i => !i.activo);
+      const tbody = document.getElementById('tabla-inquilinos');
+      if (!lista.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">No hay inquilinos</td></tr>'; return; }
+      tbody.innerHTML = lista.map(i => `<tr>
     <td>${i.nombre}</td><td>${i.telefono || '—'}</td><td>${i.email || '—'}</td>
     <td class="mono">${i.documento || '—'}</td>
     <td><span class="badge ${i.activo ? 'badge-green' : 'badge-red'}">${i.activo ? 'Activo' : 'Inactivo'}</span></td>
@@ -1321,62 +2198,63 @@ function renderInquilinos() {
       ${i.activo ? `<button class="btn btn-danger" onclick="desactivarInquilino(${i.id})">Desactivar</button>` : `<button class="btn btn-success" onclick="activarInquilino(${i.id})">Activar</button>`}
     </td>
   </tr>`).join('');
-}
+    }
 
-async function registrarInquilino() {
-  const body = { nombre: document.getElementById('inq-nombre').value, telefono: document.getElementById('inq-telefono').value, email: document.getElementById('inq-email').value, documento: document.getElementById('inq-documento').value };
-  await fetch(`${API}/inquilinos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-  closeModal('modal-inquilino');
-  todosInquilinos = await fetch(`${API}/inquilinos/todos`).then(r => r.json());
-  renderInquilinos();
-}
-function abrirEditarInquilino(id, nombre, telefono, email, documento) {
-  document.getElementById('edit-inq-id').value = id;
-  document.getElementById('edit-inq-nombre').value = nombre;
-  document.getElementById('edit-inq-telefono').value = telefono;
-  document.getElementById('edit-inq-email').value = email;
-  document.getElementById('edit-inq-documento').value = documento;
-  openModal('modal-editar-inquilino');
-}
+    async function registrarInquilino() {
+      const body = { nombre: document.getElementById('inq-nombre').value, telefono: document.getElementById('inq-telefono').value, email: document.getElementById('inq-email').value, documento: document.getElementById('inq-documento').value };
+      await fetch(`${API}/inquilinos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      closeModal('modal-inquilino');
+      todosInquilinos = await fetch(`${API}/inquilinos/todos`).then(r => r.json());
+      renderInquilinos();
+    }
+    function abrirEditarInquilino(id, nombre, telefono, email, documento) {
+      document.getElementById('edit-inq-id').value = id;
+      document.getElementById('edit-inq-nombre').value = nombre;
+      document.getElementById('edit-inq-telefono').value = telefono;
+      document.getElementById('edit-inq-email').value = email;
+      document.getElementById('edit-inq-documento').value = documento;
+      openModal('modal-editar-inquilino');
+    }
 
-async function guardarEdicionInquilino() {
-  const id = document.getElementById('edit-inq-id').value;
-  const body = {
-    nombre: document.getElementById('edit-inq-nombre').value,
-    telefono: document.getElementById('edit-inq-telefono').value,
-    email: document.getElementById('edit-inq-email').value,
-    documento: document.getElementById('edit-inq-documento').value
-  };
-  await fetch(`${API}/inquilinos/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-  closeModal('modal-editar-inquilino');
-  todosInquilinos = await fetch(`${API}/inquilinos/todos`).then(r => r.json());
-  renderInquilinos();
-}
+    async function guardarEdicionInquilino() {
+      const id = document.getElementById('edit-inq-id').value;
+      const body = {
+        nombre: document.getElementById('edit-inq-nombre').value,
+        telefono: document.getElementById('edit-inq-telefono').value,
+        email: document.getElementById('edit-inq-email').value,
+        documento: document.getElementById('edit-inq-documento').value
+      };
+      await fetch(`${API}/inquilinos/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      closeModal('modal-editar-inquilino');
+      todosInquilinos = await fetch(`${API}/inquilinos/todos`).then(r => r.json());
+      renderInquilinos();
+    }
 
-async function desactivarInquilino(id) {
-  if (!confirm('¿Desactivar este inquilino?')) return;
-  await fetch(`${API}/inquilinos/${id}/desactivar`, { method: 'PUT' });
-  todosInquilinos = await fetch(`${API}/inquilinos/todos`).then(r => r.json());
-  renderInquilinos();
-}
+    async function desactivarInquilino(id) {
+      if (!confirm('¿Desactivar este inquilino?')) return;
+      await fetch(`${API}/inquilinos/${id}/desactivar`, { method: 'PUT' });
+      todosInquilinos = await fetch(`${API}/inquilinos/todos`).then(r => r.json());
+      renderInquilinos();
+    }
 
-async function activarInquilino(id) {
-  await fetch(`${API}/inquilinos/${id}/activar`, { method: 'PUT' });
-  todosInquilinos = await fetch(`${API}/inquilinos/todos`).then(r => r.json());
-  renderInquilinos();
-}
+    async function activarInquilino(id) {
+      await fetch(`${API}/inquilinos/${id}/activar`, { method: 'PUT' });
+      todosInquilinos = await fetch(`${API}/inquilinos/todos`).then(r => r.json());
+      renderInquilinos();
+    }
 
-// Defaults
-const hoy = new Date();
-document.getElementById('resumen-mes').value = hoy.getMonth() + 1;
-document.getElementById('resumen-anio').value = hoy.getFullYear();
-// Pagos/Gastos/Retiros: forzar "Todos" por defecto
-document.getElementById('fp-mes').value = '';
-document.getElementById('fg-mes').value = '';
-document.getElementById('fr-mes').value = '';
-document.getElementById('fp-anio').value = '';
-document.getElementById('fg-anio').value = '';
-document.getElementById('fr-anio').value = '';
-</script>
+    // Defaults
+    const hoy = new Date();
+    document.getElementById('resumen-mes').value = hoy.getMonth() + 1;
+    document.getElementById('resumen-anio').value = hoy.getFullYear();
+    // Pagos/Gastos/Retiros: forzar "Todos" por defecto
+    document.getElementById('fp-mes').value = '';
+    document.getElementById('fg-mes').value = '';
+    document.getElementById('fr-mes').value = '';
+    document.getElementById('fp-anio').value = '';
+    document.getElementById('fg-anio').value = '';
+    document.getElementById('fr-anio').value = '';
+  </script>
 </body>
+
 </html>
