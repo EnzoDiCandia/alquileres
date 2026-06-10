@@ -406,7 +406,7 @@
       </div>
       <div class="table-wrapper">
         <table>
-          <thead><tr><th>#</th><th>Propiedad</th><th>Inquilino</th><th>Desde</th><th>Hasta</th><th>Monto</th><th>Próximo ajuste</th><th>Archivo</th><th>Estado</th></tr></thead>
+          <thead><tr><th>#</th><th>Propiedad</th><th>Inquilino</th><th>Desde</th><th>Hasta</th><th>Monto</th><th>Próximo ajuste</th><th>Archivo</th><th>Acciones</th></tr></thead>
           <tbody id="tabla-contratos"></tbody>
         </table>
       </div>
@@ -457,10 +457,10 @@
   <div class="modal">
     <h3>Editar Inquilino</h3>
     <input type="hidden" id="edit-inq-id">
-    <input class="input" id="edit-inq-nombre" placeholder="Nombre completo">
-    <input class="input" id="edit-inq-telefono" placeholder="Teléfono">
-    <input class="input" id="edit-inq-email" placeholder="Email">
-    <input class="input" id="edit-inq-documento" placeholder="Documento">
+    <div class="field"><input type="text" id="edit-inq-nombre" placeholder="Nombre completo"></div>
+    <div class="field"><input type="text" id="edit-inq-telefono" placeholder="Teléfono"></div>
+    <div class="field"><input type="email" id="edit-inq-email" placeholder="Email"></div>
+    <div class="field"><input type="text" id="edit-inq-documento" placeholder="Documento"></div>
     <div class="modal-actions">
       <button class="btn btn-primary" onclick="guardarEdicionInquilino()">Guardar</button>
       <button class="btn btn-secondary" onclick="closeModal('modal-editar-inquilino')">Cancelar</button>
@@ -558,6 +558,27 @@
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('modal-contrato')">Cancelar</button>
       <button class="btn btn-primary" onclick="registrarContrato()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-editar-contrato" class="modal-overlay">
+  <div class="modal">
+    <h3>Editar contrato</h3>
+    <input type="hidden" id="edit-cont-id">
+    <div class="field"><label>Propiedad</label><select id="edit-cont-propiedad"></select></div>
+    <div class="field"><label>Inquilino</label><select id="edit-cont-inquilino"></select></div>
+    <div class="two-col">
+      <div class="field"><label>Fecha inicio</label><input type="date" id="edit-cont-inicio"></div>
+      <div class="field"><label>Fecha fin</label><input type="date" id="edit-cont-fin"></div>
+    </div>
+    <div class="two-col">
+      <div class="field"><label>Monto base</label><input type="number" id="edit-cont-monto"></div>
+      <div class="field"><label>Depósito</label><input type="number" id="edit-cont-deposito"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-editar-contrato')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarEdicionContrato()">Guardar</button>
     </div>
   </div>
 </div>
@@ -1021,8 +1042,9 @@ async function eliminarRetiro(id) {
   cargarRetiros(); cargarResumen();
 }
 
-// CONTRATOS
-// CONTRATOS
+                                                                            // CONTRATOS
+
+
 function calcularProximoAjuste(c) {
   if (!c.periodicidadMeses || !c.ultimoAjuste) return null;
   const ultimo = new Date(c.ultimoAjuste);
@@ -1059,10 +1081,59 @@ async function cargarContratos() {
            📎 Subir<input type="file" style="display:none" accept=".doc,.docx,.pdf" onchange="subirArchivo(${c.id}, this)">
          </label>`
     }</td>
-    <td><span class="badge ${c.activo ? 'badge-green' : 'badge-red'}">${c.activo ? 'Activo' : 'Inactivo'}</span></td>
+    <td>
+      <button class="btn btn-secondary" style="font-size:12px;padding:4px 10px" onclick="abrirEditarContrato(${c.id})">Editar</button>
+      ${c.activo 
+      ? `<button class="btn btn-danger" onclick="desactivarContrato(${c.id})">Desactivar</button>`
+      : `<button class="btn btn-success" onclick="activarContrato(${c.id})">Activar</button>`}
+    </td>
   </tr>`).join('');
   contratos = data;
   await cargarAlertasAjuste();
+}
+
+async function desactivarContrato(id) {
+  if (!confirm('¿Desactivar este contrato?')) return;
+  await fetch(`${API}/contratos/${id}/desactivar`, { method: 'PUT' });
+  await cargarDatosBase();
+  cargarContratos();
+}
+
+async function activarContrato(id) {
+  await fetch(`${API}/contratos/${id}/activar`, { method: 'PUT' });
+  await cargarDatosBase();
+  cargarContratos();
+}
+
+function abrirEditarContrato(id) {
+  const c = contratos.find(x => x.id === id);
+  if (!c) return;
+  llenarSelect('edit-cont-propiedad', todasPropiedades, p => `${p.nombre} — ${p.direccion}`, p => p.id);
+  llenarSelect('edit-cont-inquilino', todosInquilinos, i => `${i.nombre} (DNI: ${i.documento})`, i => i.id);
+  document.getElementById('edit-cont-id').value = id;
+  document.getElementById('edit-cont-propiedad').value = c.idPropiedad;
+  document.getElementById('edit-cont-inquilino').value = c.idInquilino;
+  document.getElementById('edit-cont-inicio').value = c.fechaInicio;
+  document.getElementById('edit-cont-fin').value = c.fechaFin;
+  document.getElementById('edit-cont-monto').value = c.montoBase;
+  document.getElementById('edit-cont-deposito').value = c.deposito;
+  openModal('modal-editar-contrato');
+}
+
+async function guardarEdicionContrato() {
+  const id = document.getElementById('edit-cont-id').value;
+  const body = {
+    idPropiedad: parseInt(document.getElementById('edit-cont-propiedad').value),
+    idInquilino: parseInt(document.getElementById('edit-cont-inquilino').value),
+    fechaInicio: document.getElementById('edit-cont-inicio').value,
+    fechaFin: document.getElementById('edit-cont-fin').value,
+    montoBase: parseFloat(document.getElementById('edit-cont-monto').value),
+    deposito: parseFloat(document.getElementById('edit-cont-deposito').value)
+  };
+  await fetch(`${API}/contratos/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  closeModal('modal-editar-contrato');
+  await cargarDatosBase();
+  cargarContratos();
 }
 
 // PANEL DE ALERTAS
