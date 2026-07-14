@@ -7,8 +7,4 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java", \
-  "-DSPRING_DATASOURCE_URL=jdbc:mysql://monorail.proxy.rlwy.net:18780/railway?trustServerCertificate=true", \
-  "-DSPRING_DATASOURCE_USERNAME=root", \
-  "-DSPRING_DATASOURCE_PASSWORD=eQsgFHHesbRuDYWMTSNdXpAvWLzisUtl", \
-  "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
