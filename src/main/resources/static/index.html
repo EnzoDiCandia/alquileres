@@ -1942,7 +1942,7 @@
       if (dias <= 60) return `<span class="badge badge-yellow">⚠ ${fecha}</span>`;
       return `<span class="badge badge-green">${fecha}</span>`;
     }
-    
+
     async function cargarContratos() {
       const data = await fetch(`${API}/contratos`).then(r => r.json());
       contratos = data;
@@ -1954,22 +1954,22 @@
       <td class="hide-mobile">${c.fechaInicio}</td>
       <td>${badgeHasta(c)}</td>
       <td class="mono">${formatPeso(c.montoBase)}</td>
-      <td>${badgeAjuste(c)}</td>
-      <td class="hide-mobile">${c.archivoPdfRuta
-            ? `<a href="${c.archivoPdfRuta}" target="_blank" class="btn btn-secondary" style="padding:3px 10px;font-size:12px">📄 Ver</a>
-          <button class="btn btn-danger" style="padding:3px 8px;font-size:12px" onclick="eliminarArchivo(${c.id})">✕</button>`
-            : `<label class="btn btn-secondary" style="padding:3px 10px;font-size:12px;cursor:pointer">
-            📎 Subir<input type="file" style="display:none" accept=".doc,.docx,.pdf" onchange="subirArchivo(${c.id}, this)">
-          </label>`
-          }</td>
-      <td>
+          <td>${badgeAjuste(c)}</td>
+          <td class="hide-mobile">${c.archivoPdfRuta
+          ? `<a href="${API}/contratos/${c.id}/archivo" target="_blank" class="btn btn-secondary" style="padding:3px 10px;font-size:12px">📄 Ver</a>
+              <button class="btn btn-danger" style="padding:3px 8px;font-size:12px" onclick="eliminarArchivo(${c.id})">✕</button>`
+          : `<label class="btn btn-secondary" style="padding:3px 10px;font-size:12px;cursor:pointer">
+                📎 Subir<input type="file" style="display:none" accept=".doc,.docx,.pdf" onchange="subirArchivo(${c.id}, this)">
+              </label>`
+        }</td>
+          <td>
         <button class="btn btn-secondary" style="font-size:12px;padding:4px 10px" onclick="abrirEditarContrato(${c.id})">Editar</button>
         ${c.activo
-            ? `<button class="btn btn-danger" onclick="desactivarContrato(${c.id})">Desactivar</button>`
-            : `<button class="btn btn-success" onclick="activarContrato(${c.id})">Activar</button>`}
+          ? `<button class="btn btn-danger" onclick="desactivarContrato(${c.id})">Desactivar</button>`
+          : `<button class="btn btn-success" onclick="activarContrato(${c.id})">Activar</button>`}
       </td>
       </tr>`).join('');
-        await cargarAlertasAjuste();
+      await cargarAlertasAjuste();
     }
 
     async function desactivarContrato(id) {
