@@ -15,6 +15,7 @@ public class CampoPago {
     private Double kgHaAnual;       // ej: 1300
     private Double hectareas;       // ej: 57
     private Boolean cobrado;
+    private Double entregado = 0.0;  // suma de las entregas del período (lo completa el DAO)
     private List<CampoPrecio> precios = new ArrayList<>();   // hasta 10 días de pizarra
 
     // ── Valores calculados (se devuelven en el JSON, no se guardan) ──
@@ -36,7 +37,15 @@ public class CampoPago {
         return Math.round(getKgACobrar() * getPrecioPromedio() / 1000 * 100) / 100.0;
     }
 
+    /** Lo que falta cobrar. Si es negativo, se entregó de más (saldo a favor del arrendatario). */
+    public double getAdeuda() {
+        return Math.round((getMonto() - (entregado == null ? 0 : entregado)) * 100) / 100.0;
+    }
+
     // ── Getters y setters ──
+
+    public Double getEntregado() { return entregado; }
+    public void setEntregado(Double entregado) { this.entregado = entregado; }
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }

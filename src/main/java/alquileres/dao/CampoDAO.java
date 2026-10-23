@@ -1,5 +1,6 @@
 package alquileres.dao;
 
+import alquileres.modelo.CampoEntrega;
 import alquileres.modelo.CampoGasto;
 import alquileres.modelo.CampoPago;
 import alquileres.modelo.CampoPrecio;
@@ -41,7 +42,15 @@ public class CampoDAO {
                 "fecha DATE NOT NULL, " +
                 "concepto VARCHAR(255) NOT NULL, " +
                 "monto DECIMAL(14,2) NOT NULL, " +
-                "INDEX idx_campo_gasto_periodo (anio, mes))"
+                "INDEX idx_campo_gasto_periodo (anio, mes))",
+            "CREATE TABLE IF NOT EXISTS campo_entrega (" +
+                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "anio INT NOT NULL, " +
+                "mes INT NOT NULL, " +
+                "fecha DATE NOT NULL, " +
+                "monto DECIMAL(14,2) NOT NULL, " +
+                "observacion VARCHAR(255), " +
+                "INDEX idx_campo_entrega_periodo (anio, mes))"
         };
         try (Connection con = Conexion.getConexion();
                 Statement st = con.createStatement()) {
@@ -63,11 +72,12 @@ public class CampoDAO {
         return p;
     }
 
-    /** Todos los pagos, del más reciente al más viejo, con sus precios. */
+    /** Todos los pagos, del más reciente al más viejo, con sus precios y lo entregado. */
     public List<CampoPago> listarPagos() throws SQLException {
         crearTablasSiNoExisten();
         List<CampoPago> pagos = new ArrayList<>();
         Map<Integer, CampoPago> porId = new HashMap<>();
+        Map<String, CampoPago> porPeriodo = new HashMap<>();
         try (Connection con = Conexion.getConexion()) {
             try (PreparedStatement ps = con.prepareStatement(
                     "SELECT * FROM campo_pago ORDER BY anio DESC, mes DESC");
@@ -76,6 +86,7 @@ public class CampoDAO {
                     CampoPago p = mapearPago(rs);
                     pagos.add(p);
                     porId.put(p.getId(), p);
+                    porPeriodo.put(p.getAnio() + "-" + p.getMes(), p);
                 }
             }
             try (PreparedStatement ps = con.prepareStatement(
@@ -84,6 +95,14 @@ public class CampoDAO {
                 while (rs.next()) {
                     CampoPago p = porId.get(rs.getInt("id_pago"));
                     if (p != null) p.getPrecios().add(mapearPrecio(rs));
+                }
+            }
+            try (PreparedStatement ps = con.prepareStatement(
+                    "SELECT anio, mes, SUM(monto) AS total FROM campo_entrega GROUP BY anio, mes");
+                    ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    CampoPago p = porPeriodo.get(rs.getInt("anio") + "-" + rs.getInt("mes"));
+                    if (p != null) p.setEntregado(rs.getDouble("total"));
                 }
             }
         }
@@ -101,83 +120,45 @@ public class CampoDAO {
             if (!rs.next()) return null;
             CampoPago p = mapearPago(rs);
             p.setPrecios(listarPrecios(con, p.getId()));
+            p.setEntregado(totalEntregado(con, anio, mes));
             return p;
         }
     }
 
-    /**
-     * Guarda el pago del período: si ya existe lo actualiza, si no lo crea.
-     * Los precios se reemplazan por los que vienen.
-     */
-    public void guardarPago(CampoPago p) throws SQLException {
-        crearTablasSiNoExisten();
-        try (Connection con = Conexion.getConexion()) {
-            con.setAutoCommit(false);
-            try {
-                Integer id = null;
-                try (PreparedStatement ps = con.prepareStatement("SELECT id FROM campo_pago WHERE anio=? AND mes=?")) {
-                    ps.setInt(1, p.getAnio());
-                    ps.setInt(2, p.getMes());
-                    ResultSet rs = ps.executeQuery();
-                    if (rs.next()) id = rs.getInt("id");
-                }
-
-                if (id == null) {
-                    try (PreparedStatement ps = con.prepareStatement(
-                            "INSERT INTO campo_pago (anio, mes, kg_ha_anual, hectareas, cobrado) VALUES (?,?,?,?,?)",
-                            Statement.RETURN_GENERATED_KEYS)) {
-                        ps.setInt(1, p.getAnio());
-                        ps.setInt(2, p.getMes());
-                        ps.setDouble(3, p.getKgHaAnual());
-                        ps.setDouble(4, p.getHectareas());
-                        ps.setBoolean(5, Boolean.TRUE.equals(p.getCobrado()));
-                        ps.executeUpdate();
-                        ResultSet keys = ps.getGeneratedKeys();
-                        keys.next();
-                        id = keys.getInt(1);
-                    }
-                } else {
-                    try (PreparedStatement ps = con.prepareStatement(
-                            "UPDATE campo_pago SET kg_ha_anual=?, hectareas=?, cobrado=? WHERE id=?")) {
-                        ps.setDouble(1, p.getKgHaAnual());
-                        ps.setDouble(2, p.getHectareas());
-                        ps.setBoolean(3, Boolean.TRUE.equals(p.getCobrado()));
-                        ps.setInt(4, id);
-                        ps.executeUpdate();
-                    }
-                    try (PreparedStatement ps = con.prepareStatement("DELETE FROM campo_precio WHERE id_pago=?")) {
-                        ps.setInt(1, id);
-                        ps.executeUpdate();
-                    }
-                }
-
-                try (PreparedStatement ps = con.prepareStatement(
-                        "INSERT INTO campo_precio (id_pago, fecha, precio) VALUES (?,?,?)")) {
-                    for (CampoPrecio precio : p.getPrecios()) {
-                        ps.setInt(1, id);
-                        ps.setDate(2, Date.valueOf(precio.getFecha()));
-                        ps.setDouble(3, precio.getPrecio());
-                        ps.addBatch();
-                    }
-                    ps.executeBatch();
-                }
-                con.commit();
-            } catch (SQLException e) {
-                con.rollback();
-                throw e;
-            } finally {
-                con.setAutoCommit(true);
-            }
+    /** Devuelve el id del pago del período; si no existe lo crea con los kg/ha y hectáreas indicados. */
+    private int asegurarPago(Connection con, int anio, int mes, double kgHaAnual, double hectareas) throws SQLException {
+        try (PreparedStatement ps = con.prepareStatement("SELECT id FROM campo_pago WHERE anio=? AND mes=?")) {
+            ps.setInt(1, anio);
+            ps.setInt(2, mes);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt("id");
+        }
+        try (PreparedStatement ps = con.prepareStatement(
+                "INSERT INTO campo_pago (anio, mes, kg_ha_anual, hectareas) VALUES (?,?,?,?)",
+                Statement.RETURN_GENERATED_KEYS)) {
+            ps.setInt(1, anio);
+            ps.setInt(2, mes);
+            ps.setDouble(3, kgHaAnual);
+            ps.setDouble(4, hectareas);
+            ps.executeUpdate();
+            ResultSet keys = ps.getGeneratedKeys();
+            keys.next();
+            return keys.getInt(1);
         }
     }
 
-    public boolean marcarCobrado(int id, boolean cobrado) throws SQLException {
+    /** Guarda los kg/ha y las hectáreas del período (crea el pago si no existe). No toca los precios. */
+    public void guardarDatosPago(CampoPago p) throws SQLException {
         crearTablasSiNoExisten();
-        try (Connection con = Conexion.getConexion();
-                PreparedStatement ps = con.prepareStatement("UPDATE campo_pago SET cobrado=? WHERE id=?")) {
-            ps.setBoolean(1, cobrado);
-            ps.setInt(2, id);
-            return ps.executeUpdate() > 0;
+        try (Connection con = Conexion.getConexion()) {
+            int id = asegurarPago(con, p.getAnio(), p.getMes(), p.getKgHaAnual(), p.getHectareas());
+            try (PreparedStatement ps = con.prepareStatement(
+                    "UPDATE campo_pago SET kg_ha_anual=?, hectareas=? WHERE id=?")) {
+                ps.setDouble(1, p.getKgHaAnual());
+                ps.setDouble(2, p.getHectareas());
+                ps.setInt(3, id);
+                ps.executeUpdate();
+            }
         }
     }
 
@@ -202,8 +183,11 @@ public class CampoDAO {
         }
     }
 
+    // ─── PRECIOS DE PIZARRA (uno por uno) ────────────────────────────────────────
+
     private CampoPrecio mapearPrecio(ResultSet rs) throws SQLException {
         CampoPrecio pr = new CampoPrecio();
+        pr.setId(rs.getInt("id"));
         pr.setFecha(rs.getDate("fecha").toLocalDate());
         pr.setPrecio(rs.getDouble("precio"));
         return pr;
@@ -218,6 +202,100 @@ public class CampoDAO {
             while (rs.next()) lista.add(mapearPrecio(rs));
         }
         return lista;
+    }
+
+    /** Agrega un precio al período. Si el pago del período no existe, lo crea con los kg/ha y hectáreas dados. */
+    public void agregarPrecio(int anio, int mes, double kgHaAnual, double hectareas, CampoPrecio precio) throws SQLException {
+        crearTablasSiNoExisten();
+        try (Connection con = Conexion.getConexion()) {
+            int idPago = asegurarPago(con, anio, mes, kgHaAnual, hectareas);
+            try (PreparedStatement ps = con.prepareStatement(
+                    "INSERT INTO campo_precio (id_pago, fecha, precio) VALUES (?,?,?)")) {
+                ps.setInt(1, idPago);
+                ps.setDate(2, Date.valueOf(precio.getFecha()));
+                ps.setDouble(3, precio.getPrecio());
+                ps.executeUpdate();
+            }
+        }
+    }
+
+    public boolean actualizarPrecio(int id, CampoPrecio precio) throws SQLException {
+        crearTablasSiNoExisten();
+        try (Connection con = Conexion.getConexion();
+                PreparedStatement ps = con.prepareStatement("UPDATE campo_precio SET fecha=?, precio=? WHERE id=?")) {
+            ps.setDate(1, Date.valueOf(precio.getFecha()));
+            ps.setDouble(2, precio.getPrecio());
+            ps.setInt(3, id);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public boolean eliminarPrecio(int id) throws SQLException {
+        crearTablasSiNoExisten();
+        try (Connection con = Conexion.getConexion();
+                PreparedStatement ps = con.prepareStatement("DELETE FROM campo_precio WHERE id=?")) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    // ─── ENTREGAS ────────────────────────────────────────────────────────────────
+
+    private double totalEntregado(Connection con, int anio, int mes) throws SQLException {
+        try (PreparedStatement ps = con.prepareStatement(
+                "SELECT COALESCE(SUM(monto), 0) FROM campo_entrega WHERE anio=? AND mes=?")) {
+            ps.setInt(1, anio);
+            ps.setInt(2, mes);
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+            return rs.getDouble(1);
+        }
+    }
+
+    public List<CampoEntrega> listarEntregas(int anio, int mes) throws SQLException {
+        crearTablasSiNoExisten();
+        List<CampoEntrega> lista = new ArrayList<>();
+        try (Connection con = Conexion.getConexion();
+                PreparedStatement ps = con.prepareStatement(
+                        "SELECT * FROM campo_entrega WHERE anio=? AND mes=? ORDER BY fecha, id")) {
+            ps.setInt(1, anio);
+            ps.setInt(2, mes);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                CampoEntrega e = new CampoEntrega();
+                e.setId(rs.getInt("id"));
+                e.setAnio(rs.getInt("anio"));
+                e.setMes(rs.getInt("mes"));
+                e.setFecha(rs.getDate("fecha").toLocalDate());
+                e.setMonto(rs.getDouble("monto"));
+                e.setObservacion(rs.getString("observacion"));
+                lista.add(e);
+            }
+        }
+        return lista;
+    }
+
+    public boolean insertarEntrega(CampoEntrega e) throws SQLException {
+        crearTablasSiNoExisten();
+        try (Connection con = Conexion.getConexion();
+                PreparedStatement ps = con.prepareStatement(
+                        "INSERT INTO campo_entrega (anio, mes, fecha, monto, observacion) VALUES (?,?,?,?,?)")) {
+            ps.setInt(1, e.getAnio());
+            ps.setInt(2, e.getMes());
+            ps.setDate(3, Date.valueOf(e.getFecha()));
+            ps.setDouble(4, e.getMonto());
+            ps.setString(5, e.getObservacion());
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    public boolean eliminarEntrega(int id) throws SQLException {
+        crearTablasSiNoExisten();
+        try (Connection con = Conexion.getConexion();
+                PreparedStatement ps = con.prepareStatement("DELETE FROM campo_entrega WHERE id=?")) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        }
     }
 
     // ─── GASTOS ──────────────────────────────────────────────────────────────────

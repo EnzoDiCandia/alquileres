@@ -713,6 +713,56 @@
       }
     }
 
+    .cards-grid.campo-cards {
+      grid-template-columns: repeat(5, 1fr);
+    }
+
+    @media (max-width: 1000px) {
+      .cards-grid.campo-cards {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .cards-grid.campo-cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .campo-col-dia {
+      width: 34px;
+    }
+
+    .campo-col-acciones {
+      width: 150px;
+    }
+
+    @media (max-width: 640px) {
+      .campo-col-dia {
+        width: 26px;
+      }
+
+      .campo-col-acciones {
+        width: 74px;
+      }
+
+      #campo-precios td {
+        padding-left: 6px;
+        padding-right: 6px;
+      }
+    }
+
+    .campo-acciones {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .campo-acciones .btn {
+      padding: 3px 8px;
+      font-size: 12px;
+    }
+
     .campo-input {
       width: 100%;
       padding: 6px 8px;
@@ -1323,35 +1373,41 @@
             <button class="btn btn-secondary" onclick="cargarCampo()">Ver</button>
           </div>
         </div>
-        <div class="cards-grid">
+        <div class="cards-grid campo-cards">
           <div class="card">
-            <div class="card-label">Pago del período</div>
-            <div class="card-value green" id="card-campo-pago">—</div>
+            <div class="card-label">Valor del pago</div>
+            <div class="card-value" id="card-campo-pago">—</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Entregado</div>
+            <div class="card-value green" id="card-campo-entregado">—</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Adeuda</div>
+            <div class="card-value" id="card-campo-adeuda">—</div>
+            <div id="card-campo-estado" style="font-size:12px;color:var(--text-soft);margin-top:4px"></div>
           </div>
           <div class="card">
             <div class="card-label">Gastos</div>
             <div class="card-value orange" id="card-campo-gastos">—</div>
           </div>
           <div class="card">
-            <div class="card-label">Neto</div>
+            <div class="card-label">Neto cobrado</div>
             <div class="card-value" id="card-campo-neto">—</div>
-          </div>
-          <div class="card">
-            <div class="card-label">Estado</div>
-            <div class="card-value" id="card-campo-estado" style="font-size:16px">—</div>
           </div>
         </div>
 
-        <div class="campo-grid" style="margin-top:20px">
+        <div class="campo-grid">
           <div>
             <div class="section-subtitle" style="margin-top:0">Precios de pizarra soja ($ por tonelada)</div>
             <div class="table-wrapper">
               <table style="table-layout:fixed;width:100%;min-width:0">
                 <thead>
                   <tr>
-                    <th style="width:44px">Día</th>
+                    <th class="campo-col-dia">Día</th>
                     <th>Fecha</th>
                     <th>Precio $/t</th>
+                    <th class="campo-col-acciones"></th>
                   </tr>
                 </thead>
                 <tbody id="campo-precios"></tbody>
@@ -1370,18 +1426,30 @@
               <div class="campo-calc-linea"><span>Kg a cobrar (÷ 4)</span><span class="mono" id="campo-calc-kg">—</span></div>
               <div class="campo-calc-linea"><span>Promedio pizarra</span><span class="mono" id="campo-calc-promedio">—</span></div>
               <div class="campo-calc-linea"><span>Valor del pago</span><span class="mono" id="campo-calc-monto" style="font-weight:600">—</span></div>
-              <div class="campo-calc-linea">
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-                  <input type="checkbox" id="campo-cobrado" onchange="campoCambiarCobrado()"> Cobrado
-                </label>
-                <span id="campo-estado-carga" style="color:var(--text-soft);font-size:12px"></span>
-              </div>
               <div class="modal-actions" style="margin-top:12px">
-                <button class="btn btn-danger" id="campo-btn-eliminar" onclick="eliminarPagoCampo()">Eliminar pago</button>
-                <button class="btn btn-primary" onclick="guardarPagoCampo()">Guardar pago</button>
+                <button class="btn btn-danger" id="campo-btn-eliminar" onclick="eliminarPagoCampo()">Eliminar período</button>
+                <button class="btn btn-primary" onclick="guardarDatosCampo()">Guardar kg/ha y hectáreas</button>
               </div>
             </div>
           </div>
+        </div>
+
+        <div class="section-header" style="margin-top:24px;margin-bottom:12px">
+          <div class="section-subtitle" style="margin:0">Entregas del período</div>
+          <button class="btn btn-primary" onclick="openModal('modal-campo-entrega')">+ Registrar entrega</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Monto</th>
+                <th>Observación</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tabla-campo-entregas"></tbody>
+          </table>
         </div>
 
         <div class="section-header" style="margin-top:24px;margin-bottom:12px">
@@ -1408,9 +1476,9 @@
             <thead>
               <tr>
                 <th>Período</th>
-                <th class="hide-mobile">Kg</th>
-                <th class="hide-mobile">Promedio $/t</th>
                 <th>Valor</th>
+                <th class="hide-mobile">Entregado</th>
+                <th>Adeuda</th>
                 <th>Estado</th>
                 <th></th>
               </tr>
@@ -1418,6 +1486,7 @@
             <tbody id="tabla-campo-historial"></tbody>
           </table>
         </div>
+        <div id="campo-total-adeudado" style="margin-top:10px;font-size:14px;text-align:right"></div>
       </div>
 
     </main>
@@ -1632,6 +1701,21 @@
   </div>
 
   <!-- MODAL AJUSTE DE MONTO -->
+  <div class="modal-overlay" id="modal-campo-entrega">
+    <div class="modal">
+      <h3>Entrega del campo — <span id="campo-entrega-periodo"></span></h3>
+      <div class="field"><label>Monto entregado</label><input type="number" id="campo-entrega-monto"
+          inputmode="numeric"></div>
+      <div class="field"><label>Fecha</label><input type="date" id="campo-entrega-fecha"></div>
+      <div class="field"><label>Observación (opcional)</label><input type="text" id="campo-entrega-observacion"
+          placeholder="Ej: transferencia, cheque, efectivo"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('modal-campo-entrega')">Cancelar</button>
+        <button class="btn btn-primary" onclick="registrarEntregaCampo()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="modal-campo-gasto">
     <div class="modal">
       <h3>Gasto del campo — <span id="campo-gasto-periodo"></span></h3>
@@ -1810,6 +1894,13 @@
         document.getElementById('retiro-mes-ref').value = mes;
         document.getElementById('retiro-anio-ref').value = anio;
         llenarSelect('retiro-socio', socios, s => s.nombre, s => s.id);
+      }
+      if (id === 'modal-campo-entrega') {
+        document.getElementById('campo-entrega-fecha').value = hoyStr;
+        document.getElementById('campo-entrega-observacion').value = '';
+        const adeuda = parseFloat((document.getElementById('card-campo-adeuda').textContent || '').replace(/[^0-9,]/g, '').replace(',', '.'));
+        document.getElementById('campo-entrega-monto').value = adeuda > 0 ? adeuda : '';
+        document.getElementById('campo-entrega-periodo').textContent = document.getElementById('campo-periodo-titulo').textContent;
       }
       if (id === 'modal-campo-gasto') {
         document.getElementById('campo-gasto-fecha').value = hoyStr;
@@ -2481,11 +2572,16 @@
     // ─── CAMPO ──────────────────────────────────────────────────────────────────
     // Pago trimestral (marzo, junio, septiembre, diciembre):
     // valor = (kg soja/ha por año × hectáreas ÷ 4) × promedio de pizarra ($/t) ÷ 1000
+    // Los precios se guardan de a uno (quedan fijos) y el pago se cobra en una o varias entregas.
     const CAMPO_MESES = { 3: 'Marzo', 6: 'Junio', 9: 'Septiembre', 12: 'Diciembre' };
     const CAMPO_KG_HA_DEFECTO = 1300;
     const CAMPO_HECTAREAS_DEFECTO = 57;
-    let campoPago = null;        // pago guardado del período elegido (null si no se cargó)
+    let campoPago = null;           // pago del período elegido (null si todavía no tiene nada guardado)
+    let campoPrecios = [];          // precios guardados del período
+    let campoEditandoId = null;     // precio que se está editando
+    let campoPeriodoCargado = '';   // para no arrastrar lo tipeado de un período a otro
     let campoTotalGastos = 0;
+    let campoTotalEntregado = 0;
 
     function formatNum(n, maxDec = 2) { return Number(n).toLocaleString('es-AR', { maximumFractionDigits: maxDec }); }
 
@@ -2495,11 +2591,11 @@
       return { anio: d.getFullYear(), mes: Math.ceil((d.getMonth() + 1) / 3) * 3 };
     }
 
-    // Primeros 10 días hábiles (lunes a viernes) del mes, como fechas sugeridas
-    function campoDiasHabiles(anio, mes) {
+    // Primeros días hábiles (lunes a viernes) del mes, como fechas sugeridas
+    function campoDiasHabiles(anio, mes, cantidad) {
       const dias = [];
       const d = new Date(anio, mes - 1, 1);
-      while (dias.length < 10) {
+      while (dias.length < cantidad) {
         if (d.getDay() !== 0 && d.getDay() !== 6) {
           dias.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
         }
@@ -2512,75 +2608,245 @@
       return { anio: parseInt(document.getElementById('campo-anio').value), mes: parseInt(document.getElementById('campo-mes').value) };
     }
 
+    // Estado de un período según su valor y lo entregado
+    function campoEstado(monto, entregado) {
+      if (!(monto > 0)) return entregado > 0 ? { txt: 'Con entregas', cls: 'badge-yellow' } : { txt: 'Sin precios', cls: '' };
+      const adeuda = Math.round((monto - entregado) * 100) / 100;
+      if (adeuda <= 0) return { txt: 'Pagado', cls: 'badge-green' };
+      if (entregado > 0) return { txt: 'Parcial', cls: 'badge-yellow' };
+      return { txt: 'Pendiente', cls: 'badge-red' };
+    }
+
     async function cargarCampo() {
       const { anio, mes } = campoPeriodoElegido();
       if (!anio || !CAMPO_MESES[mes]) return;
+      const periodo = `${anio}-${mes}`;
+      // Si se recarga el mismo período, se conservan los precios tipeados que todavía no se guardaron
+      const pendientes = periodo === campoPeriodoCargado ? campoLeerNuevos() : [];
+      if (periodo !== campoPeriodoCargado) campoEditandoId = null;
+
       document.getElementById('campo-periodo-titulo').textContent = `${CAMPO_MESES[mes]} ${anio}`;
-      const [resPago, gastos, historial] = await Promise.all([
+      const [resPago, entregas, gastos, historial] = await Promise.all([
         fetch(`${API}/campo/pagos/${anio}/${mes}`),
+        fetch(`${API}/campo/entregas/${anio}/${mes}`).then(r => r.json()),
         fetch(`${API}/campo/gastos/${anio}/${mes}`).then(r => r.json()),
         fetch(`${API}/campo/pagos`).then(r => r.json())
       ]);
       campoPago = resPago.status === 200 ? await resPago.json() : null;
+      campoPrecios = campoPago ? campoPago.precios : [];
 
-      // Si el período no está cargado, se precargan los valores del último pago (o 1300 kg/ha y 57 ha)
-      const ultimo = historial[0];
-      document.getElementById('campo-kg-ha').value = campoPago ? campoPago.kgHaAnual : (ultimo ? ultimo.kgHaAnual : CAMPO_KG_HA_DEFECTO);
-      document.getElementById('campo-hectareas').value = campoPago ? campoPago.hectareas : (ultimo ? ultimo.hectareas : CAMPO_HECTAREAS_DEFECTO);
-      document.getElementById('campo-cobrado').checked = !!(campoPago && campoPago.cobrado);
+      // Si el período no tiene nada guardado, se precargan los valores del último pago (o 1300 kg/ha y 57 ha)
+      if (periodo !== campoPeriodoCargado || campoPago) {
+        const ultimo = historial[0];
+        document.getElementById('campo-kg-ha').value = campoPago ? campoPago.kgHaAnual : (ultimo ? ultimo.kgHaAnual : CAMPO_KG_HA_DEFECTO);
+        document.getElementById('campo-hectareas').value = campoPago ? campoPago.hectareas : (ultimo ? ultimo.hectareas : CAMPO_HECTAREAS_DEFECTO);
+      }
       document.getElementById('campo-btn-eliminar').style.display = campoPago ? '' : 'none';
-      document.getElementById('campo-estado-carga').textContent = campoPago ? 'Guardado' : 'Sin guardar todavía';
-      document.getElementById('card-campo-estado').textContent = campoPago ? (campoPago.cobrado ? '✓ Cobrado' : 'Pendiente') : 'Sin cargar';
+      campoPeriodoCargado = periodo;
 
-      campoRenderPrecios(campoPago ? campoPago.precios : [], campoDiasHabiles(anio, mes));
+      campoRenderPrecios(pendientes);
+      campoRenderEntregas(entregas);
       campoRenderGastos(gastos);
       campoRenderHistorial(historial);
       campoCalcular();
     }
 
-    function campoRenderPrecios(precios, fechasSugeridas) {
+    // ── Tabla de precios: guardados (fijos, con Editar/Eliminar) + filas libres para cargar ──
+
+    function campoRenderPrecios(pendientes = []) {
+      const { anio, mes } = campoPeriodoElegido();
+      const guardadas = new Set(campoPrecios.map(p => p.fecha));
+      const sugeridas = campoDiasHabiles(anio, mes, 20).filter(f => !guardadas.has(f));
       let html = '';
-      for (let i = 0; i < 10; i++) {
-        const p = precios[i];
-        const fecha = p ? p.fecha : fechasSugeridas[i];
-        const precio = p ? p.precio : '';
+      campoPrecios.forEach((p, i) => {
+        if (p.id === campoEditandoId) {
+          html += `<tr>
+            <td>${i + 1}</td>
+            <td><input type="date" class="campo-input" id="campo-ed-fecha" value="${esc(p.fecha)}"></td>
+            <td><input type="number" class="campo-input" id="campo-ed-precio" value="${esc(p.precio)}" inputmode="decimal" oninput="campoCalcular()" onkeydown="if(event.key==='Enter')campoGuardarEdicion(${p.id})"></td>
+            <td><div class="campo-acciones">
+              <button class="btn btn-primary" onclick="campoGuardarEdicion(${p.id})">Guardar</button>
+              <button class="btn btn-secondary" onclick="campoCancelarEdicion()">Cancelar</button>
+            </div></td>
+          </tr>`;
+        } else {
+          html += `<tr>
+            <td>${i + 1}</td>
+            <td>${esc(p.fecha)}</td>
+            <td class="mono">$ ${formatNum(p.precio)}</td>
+            <td><div class="campo-acciones">
+              <button class="btn btn-secondary" onclick="campoEditarPrecio(${p.id})">Editar</button>
+              <button class="btn btn-danger" onclick="campoEliminarPrecio(${p.id})">Eliminar</button>
+            </div></td>
+          </tr>`;
+        }
+      });
+      for (let j = 0; j < 10 - campoPrecios.length; j++) {
+        const pend = pendientes[j];
         html += `<tr>
-          <td>${i + 1}</td>
-          <td><input type="date" class="campo-input" id="campo-fecha-${i}" value="${esc(fecha)}"></td>
-          <td><input type="number" class="campo-input" id="campo-precio-${i}" value="${esc(precio)}" placeholder="$/t" inputmode="decimal" oninput="campoCalcular()"></td>
+          <td>${campoPrecios.length + j + 1}</td>
+          <td><input type="date" class="campo-input" id="campo-nuevo-fecha-${j}" value="${esc(pend ? pend.fecha : (sugeridas[j] || ''))}"></td>
+          <td><input type="number" class="campo-input" id="campo-nuevo-precio-${j}" value="${esc(pend ? pend.precio : '')}" placeholder="$/t" inputmode="decimal" oninput="campoCalcular()" onkeydown="if(event.key==='Enter')campoGuardarNuevo(${j})"></td>
+          <td><div class="campo-acciones"><button class="btn btn-primary" onclick="campoGuardarNuevo(${j})">Guardar</button></div></td>
         </tr>`;
       }
       document.getElementById('campo-precios').innerHTML = html;
     }
 
-    // Toma solo las filas que tienen precio cargado
-    function campoLeerPrecios() {
+    // Precios tipeados en las filas libres que todavía no se guardaron
+    function campoLeerNuevos() {
       const lista = [];
-      for (let i = 0; i < 10; i++) {
-        const precio = parseFloat(document.getElementById('campo-precio-' + i).value);
-        if (!isNaN(precio)) lista.push({ fecha: document.getElementById('campo-fecha-' + i).value || null, precio });
+      for (let j = 0; j < 10; j++) {
+        const elPrecio = document.getElementById('campo-nuevo-precio-' + j);
+        if (!elPrecio) continue;
+        const precio = parseFloat(elPrecio.value);
+        if (!isNaN(precio)) lista.push({ fecha: document.getElementById('campo-nuevo-fecha-' + j).value || null, precio });
       }
       return lista;
     }
 
+    function campoDatosBase() {
+      const { anio, mes } = campoPeriodoElegido();
+      return {
+        anio, mes,
+        kgHaAnual: parseFloat(document.getElementById('campo-kg-ha').value),
+        hectareas: parseFloat(document.getElementById('campo-hectareas').value)
+      };
+    }
+
+    async function campoGuardarNuevo(j) {
+      const elPrecio = document.getElementById('campo-nuevo-precio-' + j);
+      const body = {
+        ...campoDatosBase(),
+        fecha: document.getElementById('campo-nuevo-fecha-' + j).value || null,
+        precio: parseFloat(elPrecio.value)
+      };
+      await fetch(`${API}/campo/precios`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      elPrecio.value = '';   // ya quedó guardado: no se conserva como pendiente
+      await cargarCampo();
+    }
+
+    function campoEditarPrecio(id) {
+      const pendientes = campoLeerNuevos();
+      campoEditandoId = id;
+      campoRenderPrecios(pendientes);
+      document.getElementById('campo-ed-precio').focus();
+    }
+
+    function campoCancelarEdicion() {
+      const pendientes = campoLeerNuevos();
+      campoEditandoId = null;
+      campoRenderPrecios(pendientes);
+      campoCalcular();
+    }
+
+    async function campoGuardarEdicion(id) {
+      const body = {
+        fecha: document.getElementById('campo-ed-fecha').value || null,
+        precio: parseFloat(document.getElementById('campo-ed-precio').value)
+      };
+      await fetch(`${API}/campo/precios/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      campoEditandoId = null;
+      await cargarCampo();
+    }
+
+    async function campoEliminarPrecio(id) {
+      if (!confirm('¿Eliminar este precio?')) return;
+      await fetch(`${API}/campo/precios/${id}`, { method: 'DELETE' });
+      if (campoEditandoId === id) campoEditandoId = null;
+      await cargarCampo();
+    }
+
+    // ── Cálculo y tarjetas ──
+
     function campoCalcular() {
       const kgHa = parseFloat(document.getElementById('campo-kg-ha').value) || 0;
       const hectareas = parseFloat(document.getElementById('campo-hectareas').value) || 0;
-      const precios = campoLeerPrecios();
-      const promedio = precios.length ? Math.round(precios.reduce((s, p) => s + p.precio, 0) / precios.length * 100) / 100 : 0;
+      // Precios guardados (con el valor en edición si hay uno) + los tipeados sin guardar, como vista previa
+      const valores = campoPrecios.map(p => {
+        if (p.id === campoEditandoId) {
+          const v = parseFloat(document.getElementById('campo-ed-precio').value);
+          return isNaN(v) ? p.precio : v;
+        }
+        return p.precio;
+      });
+      const nuevos = campoLeerNuevos();
+      nuevos.forEach(n => valores.push(n.precio));
+
+      const promedio = valores.length ? Math.round(valores.reduce((s, v) => s + v, 0) / valores.length * 100) / 100 : 0;
       const kg = kgHa * hectareas / 4;
       const monto = Math.round(kg * promedio / 1000 * 100) / 100;
 
       document.getElementById('campo-calc-kg').textContent = `${formatNum(kgHa)} × ${formatNum(hectareas)} ÷ 4 = ${formatNum(kg)} kg`;
-      document.getElementById('campo-calc-promedio').textContent = precios.length
-        ? `$ ${formatNum(promedio)} /t (${precios.length} de 10 días)` : 'Cargá los precios';
-      document.getElementById('campo-calc-monto').textContent = precios.length ? formatPeso(monto) : '—';
-      document.getElementById('card-campo-pago').textContent = precios.length ? formatPeso(monto) : '—';
-      const neto = monto - campoTotalGastos;
+      document.getElementById('campo-calc-promedio').textContent = valores.length
+        ? `$ ${formatNum(promedio)} /t (${valores.length} de 10 días${nuevos.length ? `, ${nuevos.length} sin guardar` : ''})`
+        : 'Cargá los precios';
+      document.getElementById('campo-calc-monto').textContent = valores.length ? formatPeso(monto) : '—';
+
+      // Tarjetas del resumen: solo con lo guardado (lo tipeado sin guardar es vista previa del cuadro de cálculo)
+      const montoGuardado = campoPago ? campoPago.monto : 0;
+      const hayValor = montoGuardado > 0;
+      document.getElementById('card-campo-pago').textContent = hayValor ? formatPeso(montoGuardado) : '—';
+      document.getElementById('card-campo-entregado').textContent = formatPeso(campoTotalEntregado);
+      const adeuda = Math.round((montoGuardado - campoTotalEntregado) * 100) / 100;
+      const elAdeuda = document.getElementById('card-campo-adeuda');
+      if (!hayValor) { elAdeuda.textContent = '—'; elAdeuda.className = 'card-value'; }
+      else if (adeuda < 0) { elAdeuda.textContent = formatPeso(0); elAdeuda.className = 'card-value green'; }
+      else { elAdeuda.textContent = formatPeso(adeuda); elAdeuda.className = 'card-value ' + (adeuda > 0 ? 'red' : 'green'); }
+      const estado = campoEstado(montoGuardado, campoTotalEntregado);
+      document.getElementById('card-campo-estado').textContent = estado.txt + (adeuda < 0 && hayValor ? ` · a favor ${formatPeso(-adeuda)}` : '');
+
+      const neto = campoTotalEntregado - campoTotalGastos;
       const elNeto = document.getElementById('card-campo-neto');
       elNeto.textContent = formatPeso(neto);
       elNeto.className = 'card-value ' + (neto >= 0 ? 'green' : 'red');
     }
+
+    async function guardarDatosCampo() {
+      await fetch(`${API}/campo/pagos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(campoDatosBase()) });
+      await cargarCampo();
+    }
+
+    async function eliminarPagoCampo() {
+      if (!campoPago || !confirm('¿Eliminar el cálculo de este período y todos sus precios cargados? (las entregas y los gastos no se borran)')) return;
+      await fetch(`${API}/campo/pagos/${campoPago.id}`, { method: 'DELETE' });
+      await cargarCampo();
+    }
+
+    // ── Entregas ──
+
+    function campoRenderEntregas(entregas) {
+      campoTotalEntregado = entregas.reduce((s, e) => s + e.monto, 0);
+      const tbody = document.getElementById('tabla-campo-entregas');
+      if (!entregas.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty">Sin entregas en este período</td></tr>'; return; }
+      tbody.innerHTML = entregas.map(e => `<tr>
+        <td>${esc(e.fecha)}</td>
+        <td class="mono">${formatPeso(e.monto)}</td>
+        <td>${esc(e.observacion || '—')}</td>
+        <td><button class="btn btn-danger" onclick="eliminarEntregaCampo(${e.id})">Eliminar</button></td>
+      </tr>`).join('');
+    }
+
+    async function registrarEntregaCampo() {
+      const { anio, mes } = campoPeriodoElegido();
+      const body = {
+        anio, mes,
+        fecha: document.getElementById('campo-entrega-fecha').value || null,
+        monto: parseFloat(document.getElementById('campo-entrega-monto').value),
+        observacion: document.getElementById('campo-entrega-observacion').value
+      };
+      await fetch(`${API}/campo/entregas`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      closeModal('modal-campo-entrega');
+      await cargarCampo();
+    }
+
+    async function eliminarEntregaCampo(id) {
+      if (!confirm('¿Eliminar esta entrega?')) return;
+      await fetch(`${API}/campo/entregas/${id}`, { method: 'DELETE' });
+      await cargarCampo();
+    }
+
+    // ── Gastos ──
 
     function campoRenderGastos(gastos) {
       campoTotalGastos = gastos.reduce((s, g) => s + g.monto, 0);
@@ -2593,53 +2859,6 @@
         <td class="mono">${formatPeso(g.monto)}</td>
         <td><button class="btn btn-danger" onclick="eliminarGastoCampo(${g.id})">Eliminar</button></td>
       </tr>`).join('');
-    }
-
-    function campoRenderHistorial(pagos) {
-      const tbody = document.getElementById('tabla-campo-historial');
-      if (!pagos.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">Todavía no hay pagos cargados</td></tr>'; return; }
-      tbody.innerHTML = pagos.map(p => `<tr>
-        <td>${CAMPO_MESES[p.mes] || p.mes} ${p.anio}</td>
-        <td class="mono hide-mobile">${formatNum(p.kgACobrar)}</td>
-        <td class="mono hide-mobile">$ ${formatNum(p.precioPromedio)}</td>
-        <td class="mono">${formatPeso(p.monto)}</td>
-        <td><span class="badge ${p.cobrado ? 'badge-green' : 'badge-yellow'}">${p.cobrado ? 'Cobrado' : 'Pendiente'}</span></td>
-        <td><button class="btn btn-secondary" style="padding:3px 10px;font-size:12px" onclick="campoVerPeriodo(${p.anio}, ${p.mes})">Ver</button></td>
-      </tr>`).join('');
-    }
-
-    function campoVerPeriodo(anio, mes) {
-      document.getElementById('campo-anio').value = anio;
-      document.getElementById('campo-mes').value = mes;
-      cargarCampo();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    async function guardarPagoCampo() {
-      const { anio, mes } = campoPeriodoElegido();
-      const body = {
-        anio, mes,
-        kgHaAnual: parseFloat(document.getElementById('campo-kg-ha').value),
-        hectareas: parseFloat(document.getElementById('campo-hectareas').value),
-        cobrado: document.getElementById('campo-cobrado').checked,
-        precios: campoLeerPrecios()
-      };
-      await fetch(`${API}/campo/pagos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      await cargarCampo();
-    }
-
-    // Si el pago ya está guardado, el tilde de "Cobrado" se guarda en el momento
-    async function campoCambiarCobrado() {
-      if (!campoPago) return;   // si no está guardado, se guarda junto con el pago
-      const cobrado = document.getElementById('campo-cobrado').checked;
-      await fetch(`${API}/campo/pagos/${campoPago.id}/cobrado`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cobrado }) });
-      await cargarCampo();
-    }
-
-    async function eliminarPagoCampo() {
-      if (!campoPago || !confirm('¿Eliminar el pago de este período y sus precios cargados?')) return;
-      await fetch(`${API}/campo/pagos/${campoPago.id}`, { method: 'DELETE' });
-      await cargarCampo();
     }
 
     async function registrarGastoCampo() {
@@ -2661,13 +2880,44 @@
       await cargarCampo();
     }
 
+    // ── Historial ──
+
+    function campoRenderHistorial(pagos) {
+      const tbody = document.getElementById('tabla-campo-historial');
+      const total = document.getElementById('campo-total-adeudado');
+      if (!pagos.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty">Todavía no hay pagos cargados</td></tr>';
+        total.innerHTML = '';
+        return;
+      }
+      tbody.innerHTML = pagos.map(p => {
+        const estado = campoEstado(p.monto, p.entregado);
+        return `<tr>
+        <td>${CAMPO_MESES[p.mes] || p.mes} ${p.anio}</td>
+        <td class="mono">${p.monto > 0 ? formatPeso(p.monto) : '—'}</td>
+        <td class="mono hide-mobile">${formatPeso(p.entregado)}</td>
+        <td class="mono ${p.adeuda > 0 ? 'adeuda' : 'pagado'}">${p.monto > 0 ? formatPeso(Math.max(0, p.adeuda)) : '—'}</td>
+        <td><span class="badge ${estado.cls}">${estado.txt}</span></td>
+        <td><button class="btn btn-secondary" style="padding:3px 10px;font-size:12px" onclick="campoVerPeriodo(${p.anio}, ${p.mes})">Ver</button></td>
+      </tr>`;
+      }).join('');
+      const deudaTotal = pagos.reduce((s, p) => s + (p.monto > 0 ? Math.max(0, p.adeuda) : 0), 0);
+      total.innerHTML = `Total adeudado: <span class="mono ${deudaTotal > 0 ? 'adeuda' : 'pagado'}" style="font-weight:600">${formatPeso(deudaTotal)}</span>`;
+    }
+
+    function campoVerPeriodo(anio, mes) {
+      document.getElementById('campo-anio').value = anio;
+      document.getElementById('campo-mes').value = mes;
+      cargarCampo();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     // Período inicial del campo: el próximo pago
     (() => {
       const { anio, mes } = campoPeriodoActual();
       document.getElementById('campo-anio').value = anio;
       document.getElementById('campo-mes').value = mes;
     })();
-
 
     // Defaults
     const hoy = new Date();
