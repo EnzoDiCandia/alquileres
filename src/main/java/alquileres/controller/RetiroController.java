@@ -9,7 +9,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/retiros")
-@CrossOrigin(origins = "*")
 public class RetiroController {
 
     private RetiroDAO dao = new RetiroDAO();

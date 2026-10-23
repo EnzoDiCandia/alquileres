@@ -9,7 +9,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/propiedades")
-@CrossOrigin(origins = "*")
 public class PropiedadController {
 
     private PropiedadDAO dao = new PropiedadDAO();

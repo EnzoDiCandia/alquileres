@@ -1531,6 +1531,19 @@
   <script>
     const API = '';
     let usuarioActual = null;
+
+    // Agrega el token CSRF a los pedidos que modifican datos y vuelve al login si la sesión venció
+    const fetchOriginal = window.fetch.bind(window);
+    window.fetch = async (url, opts = {}) => {
+      const metodo = (opts.method || 'GET').toUpperCase();
+      if (metodo !== 'GET') {
+        const m = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+        if (m) opts.headers = { ...(opts.headers || {}), 'X-XSRF-TOKEN': decodeURIComponent(m[1]) };
+      }
+      const res = await fetchOriginal(url, opts);
+      if (res.status === 401 && usuarioActual) logout();
+      return res;
+    };
     let socios = [], propiedades = [], inquilinos = [], contratos = [];
     let todasPropiedades = [], todosInquilinos = [];
     let filtroProp = 'activas', filtroInq = 'activos';
@@ -1556,6 +1569,7 @@
     }
 
     function logout() {
+      if (usuarioActual) fetch(`${API}/auth/logout`, { method: 'POST' }).catch(() => {});
       usuarioActual = null;
       document.getElementById('login-screen').style.display = 'flex';
       document.getElementById('app').style.display = 'none';

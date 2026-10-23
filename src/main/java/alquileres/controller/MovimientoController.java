@@ -14,7 +14,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/movimientos")
-@CrossOrigin(origins = "*")
 public class MovimientoController {
 
     private MovimientoDAO dao = new MovimientoDAO();

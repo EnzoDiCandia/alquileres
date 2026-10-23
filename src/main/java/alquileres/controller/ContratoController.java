@@ -20,7 +20,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/contratos")
-@CrossOrigin(origins = "*")
 public class ContratoController {
 
     private ContratoDAO dao = new ContratoDAO();
