@@ -1613,7 +1613,7 @@
         document.getElementById('pago-fecha').value = hoyStr;
         document.getElementById('pago-mes-ref').value = mes;
         document.getElementById('pago-anio-ref').value = anio;
-        llenarSelect('pago-contrato', contratos, c => `#${c.id} — ${nombrePropiedad(c.idPropiedad)} / ${nombreInquilino(c.idInquilino)}`, c => c.id);
+        llenarSelect('pago-contrato', contratos, c => `#${c.id} — ${esc(nombrePropiedad(c.idPropiedad))} / ${esc(nombreInquilino(c.idInquilino))}`, c => c.id);
       }
       if (id === 'modal-gasto') {
         document.getElementById('gasto-fecha').value = hoyStr;
@@ -1626,8 +1626,8 @@
         llenarSelect('retiro-socio', socios, s => s.nombre, s => s.id);
       }
       if (id === 'modal-contrato') {
-        llenarSelect('contrato-propiedad', propiedades, p => `${p.nombre} — ${p.direccion}`, p => p.id);
-        llenarSelect('contrato-inquilino', inquilinos, i => `${i.nombre} (DNI: ${i.documento})`, i => i.id);
+        llenarSelect('contrato-propiedad', propiedades, p => `${esc(p.nombre)} — ${esc(p.direccion)}`, p => p.id);
+        llenarSelect('contrato-inquilino', inquilinos, i => `${esc(i.nombre)} (DNI: ${esc(i.documento)})`, i => i.id);
       }
     }
 
@@ -1650,14 +1650,19 @@
       todasPropiedades = tp; todosInquilinos = ti;
       // Llenar filtros fijos
       const selSocio = document.getElementById('fr-socio');
-      selSocio.innerHTML = '<option value="">Todos</option>' + socios.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('');
+      selSocio.innerHTML = '<option value="">Todos</option>' + socios.map(s => `<option value="${s.id}">${esc(s.nombre)}</option>`).join('');
       const selContrato = document.getElementById('fp-contrato');
-      selContrato.innerHTML = '<option value="">Todos</option>' + contratos.map(c => `<option value="${c.id}">#${c.id} — ${nombrePropiedad(c.idPropiedad)}</option>`).join('');
+      selContrato.innerHTML = '<option value="">Todos</option>' + contratos.map(c => `<option value="${c.id}">#${c.id} — ${esc(nombrePropiedad(c.idPropiedad))}</option>`).join('');
     }
 
     function nombreSocio(id) { const s = socios.find(x => x.id === id); return s ? s.nombre : `Socio ${id}`; }
     function nombrePropiedad(id) { const p = todasPropiedades.find(x => x.id === id); return p ? p.nombre : `Prop. ${id}`; }
     function nombreInquilino(id) { const i = todosInquilinos.find(x => x.id === id); return i ? i.nombre : `Inq. ${id}`; }
+
+    // Escapa texto antes de insertarlo como HTML (evita que un dato cargado ejecute código)
+    function esc(v) {
+      return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
     function formatPeso(n) { return '$ ' + Number(n).toLocaleString('es-AR', { minimumFractionDigits: 0 }); }
 
     // RESUMEN
@@ -1694,8 +1699,8 @@
         else if (adeuda === 0) { cls = 'badge-green'; txt = 'Pagado'; }
         else { cls = 'badge-yellow'; txt = 'Parcial'; }
         tbody.innerHTML += `<tr>
-      <td>${nombreInquilino(c.idInquilino)}</td>
-      <td class="hide-mobile">${nombrePropiedad(c.idPropiedad)}</td>
+      <td>${esc(nombreInquilino(c.idInquilino))}</td>
+      <td class="hide-mobile">${esc(nombrePropiedad(c.idPropiedad))}</td>
       <td class="mono">${formatPeso(c.montoBase)}</td>
       <td class="mono ${pagado > 0 ? 'pagado' : ''}">${formatPeso(pagado)}</td>
       <td class="mono ${adeuda > 0 ? 'adeuda' : 'pagado'}">${formatPeso(adeuda)}</td>
@@ -1711,7 +1716,7 @@
       const data = await fetch(`${API}/movimientos/gastos/${anio}/${mes}`).then(r => r.json());
       const tbody = document.getElementById('tabla-gastos-resumen');
       if (!data.length) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Sin gastos</td></tr>'; return; }
-      tbody.innerHTML = data.map(g => `<tr><td>${g.fecha}</td><td>${g.concepto}</td><td class="mono">${formatPeso(g.monto)}</td></tr>`).join('');
+      tbody.innerHTML = data.map(g => `<tr><td>${esc(g.fecha)}</td><td>${esc(g.concepto)}</td><td class="mono">${formatPeso(g.monto)}</td></tr>`).join('');
     }
 
     async function cargarRetirosResumen() {
@@ -1724,7 +1729,7 @@
         retiros.forEach(r => total.push({ ...r, nSocio: s.nombre }));
       }
       if (!total.length) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Sin retiros</td></tr>'; return; }
-      tbody.innerHTML = total.map(r => `<tr><td>${r.nSocio}</td><td>${r.fecha ? r.fecha.substring(0, 10) : '—'}</td><td class="mono">${formatPeso(r.monto)}</td></tr>`).join('');
+      tbody.innerHTML = total.map(r => `<tr><td>${esc(r.nSocio)}</td><td>${r.fecha ? r.fecha.substring(0, 10) : '—'}</td><td class="mono">${formatPeso(r.monto)}</td></tr>`).join('');
     }
 
     async function cargarRetirosPorSocio() {
@@ -1744,7 +1749,7 @@
           : `<tr><td colspan="2" style="padding:14px;text-align:center;font-size:12px;color:var(--text-soft)">Sin retiros este mes</td></tr>`;
         tarjetas.push(`
       <div class="card" style="padding:0;overflow:hidden;min-width:0;">
-        <div style="padding:12px 14px;border-bottom:1px solid var(--border)"><span style="font-weight:600;font-size:14px">${socio.nombre}</span></div>
+        <div style="padding:12px 14px;border-bottom:1px solid var(--border)"><span style="font-weight:600;font-size:14px">${esc(socio.nombre)}</span></div>
         <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
         <table style="width:100%;border-collapse:collapse;min-width:unset;">
           <thead><tr>
@@ -1788,15 +1793,15 @@
         tbody.innerHTML = lista.map(m => {
           const c = contratos.find(c => c.id === m.idContrato);
           return `<tr>
-        <td>${m.fecha || '—'}</td>
-        <td>${c ? `#${c.id} — ${nombrePropiedad(c.idPropiedad)}` : '—'}</td>
-        <td>${m.concepto || '—'}</td>
+        <td>${esc(m.fecha || '—')}</td>
+        <td>${c ? `#${c.id} — ${esc(nombrePropiedad(c.idPropiedad))}` : '—'}</td>
+        <td>${esc(m.concepto || '—')}</td>
         <td class="mono">${formatPeso(m.monto)}</td>
         <td><button class="btn btn-danger" onclick="eliminarMovimiento(${m.id})">Eliminar</button></td>
       </tr>`;
         }).join('');
       } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="5" class="empty" style="color:var(--danger)">Error: ${e.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="empty" style="color:var(--danger)">Error: ${esc(e.message)}</td></tr>`;
       }
     }
 
@@ -1822,13 +1827,13 @@
         const lista = Array.isArray(data) ? (url.includes('/gastos/') ? data : data.filter(m => !m.esIngreso)) : [];
         if (!lista.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty">No hay gastos</td></tr>'; return; }
         tbody.innerHTML = lista.map(m => `<tr>
-      <td>${m.fecha || '—'}</td>
-      <td>${m.concepto || '—'}</td>
+      <td>${esc(m.fecha || '—')}</td>
+      <td>${esc(m.concepto || '—')}</td>
       <td class="mono">${formatPeso(m.monto)}</td>
       <td><button class="btn btn-danger" onclick="eliminarMovimiento(${m.id})">Eliminar</button></td>
     </tr>`).join('');
       } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="4" class="empty" style="color:var(--danger)">Error: ${e.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="empty" style="color:var(--danger)">Error: ${esc(e.message)}</td></tr>`;
       }
     }
 
@@ -1860,13 +1865,13 @@
         if (!lista.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">No hay retiros</td></tr>'; return; }
         tbody.innerHTML = lista.map(r => `<tr>
       <td>${r.fecha ? r.fecha.substring(0, 10) : '—'}</td>
-      <td>${nombreSocio(r.idSocio)}</td>
+      <td>${esc(nombreSocio(r.idSocio))}</td>
       <td class="mono">${formatPeso(r.monto)}</td>
-      <td>${r.observacion || '—'}</td>
+      <td>${esc(r.observacion || '—')}</td>
       <td><button class="btn btn-danger" onclick="eliminarRetiro(${r.id})">Eliminar</button></td>
     </tr>`).join('');
       } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="5" class="empty" style="color:var(--danger)">Error: ${e.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="empty" style="color:var(--danger)">Error: ${esc(e.message)}</td></tr>`;
       }
     }
 
@@ -1963,9 +1968,9 @@
       const tbody = document.getElementById('tabla-contratos');
       if (!data.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No hay contratos activos</td></tr>'; return; }
       tbody.innerHTML = data.map(c => `<tr>
-      <td>${nombrePropiedad(c.idPropiedad)}</td>
-      <td>${nombreInquilino(c.idInquilino)}</td>
-      <td class="hide-mobile">${c.fechaInicio}</td>
+      <td>${esc(nombrePropiedad(c.idPropiedad))}</td>
+      <td>${esc(nombreInquilino(c.idInquilino))}</td>
+      <td class="hide-mobile">${esc(c.fechaInicio)}</td>
       <td>${badgeHasta(c)}</td>
       <td class="mono">${formatPeso(c.montoBase)}</td>
           <td>${badgeAjuste(c)}</td>
@@ -2002,8 +2007,8 @@
     function abrirEditarContrato(id) {
       const c = contratos.find(x => x.id === id);
       if (!c) return;
-      llenarSelect('edit-cont-propiedad', todasPropiedades, p => `${p.nombre} — ${p.direccion}`, p => p.id);
-      llenarSelect('edit-cont-inquilino', todosInquilinos, i => `${i.nombre} (DNI: ${i.documento})`, i => i.id);
+      llenarSelect('edit-cont-propiedad', todasPropiedades, p => `${esc(p.nombre)} — ${esc(p.direccion)}`, p => p.id);
+      llenarSelect('edit-cont-inquilino', todosInquilinos, i => `${esc(i.nombre)} (DNI: ${esc(i.documento)})`, i => i.id);
       document.getElementById('edit-cont-id').value = id;
       document.getElementById('edit-cont-propiedad').value = c.idPropiedad;
       document.getElementById('edit-cont-inquilino').value = c.idInquilino;
@@ -2060,9 +2065,9 @@
           const label = dias !== null ? (dias <= 0 ? 'Vencido hace ' + Math.abs(dias) + ' días' : 'en ' + dias + ' días') : '';
           return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid #fde68a;">' +
             '<div>' +
-            '<span style="font-weight:600">' + nombrePropiedad(c.idPropiedad) + '</span>' +
+            '<span style="font-weight:600">' + esc(nombrePropiedad(c.idPropiedad)) + '</span>' +
             '<span style="color:#856404;margin:0 6px">—</span>' +
-            '<span>' + nombreInquilino(c.idInquilino) + '</span>' +
+            '<span>' + esc(nombreInquilino(c.idInquilino)) + '</span>' +
             '<span style="color:#856404;font-size:13px;margin-left:8px">(' + fecha + ' · ' + label + ')</span>' +
             '</div>' +
             '<button class="btn btn-primary" style="padding:4px 12px;font-size:13px" onclick="abrirAjuste(' + c.id + ')">Ajustar monto</button>' +
@@ -2184,7 +2189,7 @@
       const tbody = document.getElementById('tabla-propiedades');
       if (!lista.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">No hay propiedades</td></tr>'; return; }
       tbody.innerHTML = lista.map(p => `<tr>
-    <td>${p.nombre}</td><td>${p.direccion}</td><td>${p.tipo}</td>
+    <td>${esc(p.nombre)}</td><td>${esc(p.direccion)}</td><td>${esc(p.tipo)}</td>
     <td><span class="badge ${p.activo ? 'badge-green' : 'badge-red'}">${p.activo ? 'Activa' : 'Inactiva'}</span></td>
     <td>${p.activo ? `<button class="btn btn-danger" onclick="desactivarPropiedad(${p.id})">Desactivar</button>` : `<button class="btn btn-success" onclick="activarPropiedad(${p.id})">Activar</button>`}</td>
   </tr>`).join('');
@@ -2225,11 +2230,11 @@
       const tbody = document.getElementById('tabla-inquilinos');
       if (!lista.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">No hay inquilinos</td></tr>'; return; }
       tbody.innerHTML = lista.map(i => `<tr>
-    <td>${i.nombre}</td><td>${i.telefono || '—'}</td><td>${i.email || '—'}</td>
-    <td class="mono">${i.documento || '—'}</td>
+    <td>${esc(i.nombre)}</td><td>${esc(i.telefono || '—')}</td><td>${esc(i.email || '—')}</td>
+    <td class="mono">${esc(i.documento || '—')}</td>
     <td><span class="badge ${i.activo ? 'badge-green' : 'badge-red'}">${i.activo ? 'Activo' : 'Inactivo'}</span></td>
     <td>
-      <button class="btn btn-secondary" onclick="abrirEditarInquilino(${i.id}, '${i.nombre}', '${i.telefono || ''}', '${i.email || ''}', '${i.documento || ''}')">Editar</button>
+      <button class="btn btn-secondary" onclick="abrirEditarInquilino(${i.id}, ${esc(JSON.stringify(i.nombre || ''))}, ${esc(JSON.stringify(i.telefono || ''))}, ${esc(JSON.stringify(i.email || ''))}, ${esc(JSON.stringify(i.documento || ''))})">Editar</button>
       ${i.activo ? `<button class="btn btn-danger" onclick="desactivarInquilino(${i.id})">Desactivar</button>` : `<button class="btn btn-success" onclick="activarInquilino(${i.id})">Activar</button>`}
     </td>
   </tr>`).join('');
