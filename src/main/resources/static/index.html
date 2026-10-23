@@ -211,7 +211,7 @@
       align-items: center;
       gap: 2px;
       overflow-x: auto;
-      flex: 1;
+      flex: 0 1 auto;
     }
 
     .nav-links::-webkit-scrollbar {
@@ -695,6 +695,55 @@
       gap: 10px;
     }
 
+    /* CAMPO */
+    .campo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .campo-grid>div {
+      min-width: 0;
+    }
+
+    @media (max-width: 640px) {
+      .campo-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .campo-input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      min-width: 0;
+    }
+
+    .campo-calc-linea {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 4px 12px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .campo-calc-linea:last-child {
+      border-bottom: none;
+    }
+
+    .campo-calc-linea span:first-child {
+      color: var(--text-soft);
+    }
+
     /* RESUMEN */
     .section-subtitle {
       font-size: 14px;
@@ -903,6 +952,7 @@
         <div class="nav-link" onclick="showSection('contratos', this); closeMobileMenu()">Contratos</div>
         <div class="nav-link" onclick="showSection('propiedades', this); closeMobileMenu()">Propiedades</div>
         <div class="nav-link" onclick="showSection('inquilinos', this); closeMobileMenu()">Inquilinos</div>
+        <div class="nav-link" onclick="showSection('campo', this); closeMobileMenu()">Campo</div>
       </div>
       <div class="nav-spacer"></div>
       <div class="nav-user">Hola, <span id="nav-nombre"></span></div>
@@ -919,6 +969,7 @@
       <div class="nav-link" onclick="showSection('contratos', this); closeMobileMenu()">Contratos</div>
       <div class="nav-link" onclick="showSection('propiedades', this); closeMobileMenu()">Propiedades</div>
       <div class="nav-link" onclick="showSection('inquilinos', this); closeMobileMenu()">Inquilinos</div>
+      <div class="nav-link" onclick="showSection('campo', this); closeMobileMenu()">Campo</div>
       <div class="nav-mobile-bottom">
         <span style="font-size:13px;color:var(--text-soft)">Hola, <strong id="nav-nombre-mobile"></strong></span>
         <button class="btn-logout" onclick="logout()">Salir</button>
@@ -1257,6 +1308,118 @@
         </div>
       </div>
 
+      <!-- CAMPO -->
+      <div class="section" id="section-campo">
+        <div class="section-header">
+          <h2>Campo — <span id="campo-periodo-titulo"></span></h2>
+          <div class="month-selector">
+            <select id="campo-mes">
+              <option value="3">Marzo</option>
+              <option value="6">Junio</option>
+              <option value="9">Septiembre</option>
+              <option value="12">Diciembre</option>
+            </select>
+            <input type="number" id="campo-anio" min="2020" max="2040" style="width:82px">
+            <button class="btn btn-secondary" onclick="cargarCampo()">Ver</button>
+          </div>
+        </div>
+        <div class="cards-grid">
+          <div class="card">
+            <div class="card-label">Pago del período</div>
+            <div class="card-value green" id="card-campo-pago">—</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Gastos</div>
+            <div class="card-value orange" id="card-campo-gastos">—</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Neto</div>
+            <div class="card-value" id="card-campo-neto">—</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Estado</div>
+            <div class="card-value" id="card-campo-estado" style="font-size:16px">—</div>
+          </div>
+        </div>
+
+        <div class="campo-grid" style="margin-top:20px">
+          <div>
+            <div class="section-subtitle" style="margin-top:0">Precios de pizarra soja ($ por tonelada)</div>
+            <div class="table-wrapper">
+              <table style="table-layout:fixed;width:100%;min-width:0">
+                <thead>
+                  <tr>
+                    <th style="width:44px">Día</th>
+                    <th>Fecha</th>
+                    <th>Precio $/t</th>
+                  </tr>
+                </thead>
+                <tbody id="campo-precios"></tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="section-subtitle" style="margin-top:0">Cálculo del pago</div>
+            <div class="card">
+              <div class="two-col">
+                <div class="field"><label>Kg soja / ha por año</label><input type="number" id="campo-kg-ha"
+                    inputmode="decimal" oninput="campoCalcular()"></div>
+                <div class="field"><label>Hectáreas</label><input type="number" id="campo-hectareas"
+                    inputmode="decimal" oninput="campoCalcular()"></div>
+              </div>
+              <div class="campo-calc-linea"><span>Kg a cobrar (÷ 4)</span><span class="mono" id="campo-calc-kg">—</span></div>
+              <div class="campo-calc-linea"><span>Promedio pizarra</span><span class="mono" id="campo-calc-promedio">—</span></div>
+              <div class="campo-calc-linea"><span>Valor del pago</span><span class="mono" id="campo-calc-monto" style="font-weight:600">—</span></div>
+              <div class="campo-calc-linea">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                  <input type="checkbox" id="campo-cobrado" onchange="campoCambiarCobrado()"> Cobrado
+                </label>
+                <span id="campo-estado-carga" style="color:var(--text-soft);font-size:12px"></span>
+              </div>
+              <div class="modal-actions" style="margin-top:12px">
+                <button class="btn btn-danger" id="campo-btn-eliminar" onclick="eliminarPagoCampo()">Eliminar pago</button>
+                <button class="btn btn-primary" onclick="guardarPagoCampo()">Guardar pago</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-header" style="margin-top:24px;margin-bottom:12px">
+          <div class="section-subtitle" style="margin:0">Gastos del período</div>
+          <button class="btn btn-primary" onclick="openModal('modal-campo-gasto')">+ Agregar gasto</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Concepto</th>
+                <th>Monto</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tabla-campo-gastos"></tbody>
+          </table>
+        </div>
+
+        <div class="section-subtitle">Historial de pagos</div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Período</th>
+                <th class="hide-mobile">Kg</th>
+                <th class="hide-mobile">Promedio $/t</th>
+                <th>Valor</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tabla-campo-historial"></tbody>
+          </table>
+        </div>
+      </div>
+
     </main>
   </div>
 
@@ -1469,6 +1632,21 @@
   </div>
 
   <!-- MODAL AJUSTE DE MONTO -->
+  <div class="modal-overlay" id="modal-campo-gasto">
+    <div class="modal">
+      <h3>Gasto del campo — <span id="campo-gasto-periodo"></span></h3>
+      <div class="field"><label>Concepto</label><input type="text" id="campo-gasto-concepto"
+          placeholder="Ej: Impuesto inmobiliario"></div>
+      <div class="field"><label>Monto</label><input type="number" id="campo-gasto-monto" placeholder="15000"
+          inputmode="numeric"></div>
+      <div class="field"><label>Fecha</label><input type="date" id="campo-gasto-fecha"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('modal-campo-gasto')">Cancelar</button>
+        <button class="btn btn-primary" onclick="registrarGastoCampo()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="modal-ajuste">
     <div class="modal">
       <h3>Registrar ajuste de monto</h3>
@@ -1608,6 +1786,7 @@
       if (name === 'contratos') cargarContratos();
       if (name === 'propiedades') renderPropiedades();
       if (name === 'inquilinos') renderInquilinos();
+      if (name === 'campo') cargarCampo();
     }
 
     function openModal(id) {
@@ -1631,6 +1810,12 @@
         document.getElementById('retiro-mes-ref').value = mes;
         document.getElementById('retiro-anio-ref').value = anio;
         llenarSelect('retiro-socio', socios, s => s.nombre, s => s.id);
+      }
+      if (id === 'modal-campo-gasto') {
+        document.getElementById('campo-gasto-fecha').value = hoyStr;
+        document.getElementById('campo-gasto-concepto').value = '';
+        document.getElementById('campo-gasto-monto').value = '';
+        document.getElementById('campo-gasto-periodo').textContent = document.getElementById('campo-periodo-titulo').textContent;
       }
       if (id === 'modal-contrato') {
         llenarSelect('contrato-propiedad', propiedades, p => `${esc(p.nombre)} — ${esc(p.direccion)}`, p => p.id);
@@ -2292,6 +2477,197 @@
       todosInquilinos = await fetch(`${API}/inquilinos/todos`).then(r => r.json());
       renderInquilinos();
     }
+
+    // ─── CAMPO ──────────────────────────────────────────────────────────────────
+    // Pago trimestral (marzo, junio, septiembre, diciembre):
+    // valor = (kg soja/ha por año × hectáreas ÷ 4) × promedio de pizarra ($/t) ÷ 1000
+    const CAMPO_MESES = { 3: 'Marzo', 6: 'Junio', 9: 'Septiembre', 12: 'Diciembre' };
+    const CAMPO_KG_HA_DEFECTO = 1300;
+    const CAMPO_HECTAREAS_DEFECTO = 57;
+    let campoPago = null;        // pago guardado del período elegido (null si no se cargó)
+    let campoTotalGastos = 0;
+
+    function formatNum(n, maxDec = 2) { return Number(n).toLocaleString('es-AR', { maximumFractionDigits: maxDec }); }
+
+    // Próximo período de pago a partir de hoy (octubre → diciembre, enero → marzo, etc.)
+    function campoPeriodoActual() {
+      const d = new Date();
+      return { anio: d.getFullYear(), mes: Math.ceil((d.getMonth() + 1) / 3) * 3 };
+    }
+
+    // Primeros 10 días hábiles (lunes a viernes) del mes, como fechas sugeridas
+    function campoDiasHabiles(anio, mes) {
+      const dias = [];
+      const d = new Date(anio, mes - 1, 1);
+      while (dias.length < 10) {
+        if (d.getDay() !== 0 && d.getDay() !== 6) {
+          dias.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+        }
+        d.setDate(d.getDate() + 1);
+      }
+      return dias;
+    }
+
+    function campoPeriodoElegido() {
+      return { anio: parseInt(document.getElementById('campo-anio').value), mes: parseInt(document.getElementById('campo-mes').value) };
+    }
+
+    async function cargarCampo() {
+      const { anio, mes } = campoPeriodoElegido();
+      if (!anio || !CAMPO_MESES[mes]) return;
+      document.getElementById('campo-periodo-titulo').textContent = `${CAMPO_MESES[mes]} ${anio}`;
+      const [resPago, gastos, historial] = await Promise.all([
+        fetch(`${API}/campo/pagos/${anio}/${mes}`),
+        fetch(`${API}/campo/gastos/${anio}/${mes}`).then(r => r.json()),
+        fetch(`${API}/campo/pagos`).then(r => r.json())
+      ]);
+      campoPago = resPago.status === 200 ? await resPago.json() : null;
+
+      // Si el período no está cargado, se precargan los valores del último pago (o 1300 kg/ha y 57 ha)
+      const ultimo = historial[0];
+      document.getElementById('campo-kg-ha').value = campoPago ? campoPago.kgHaAnual : (ultimo ? ultimo.kgHaAnual : CAMPO_KG_HA_DEFECTO);
+      document.getElementById('campo-hectareas').value = campoPago ? campoPago.hectareas : (ultimo ? ultimo.hectareas : CAMPO_HECTAREAS_DEFECTO);
+      document.getElementById('campo-cobrado').checked = !!(campoPago && campoPago.cobrado);
+      document.getElementById('campo-btn-eliminar').style.display = campoPago ? '' : 'none';
+      document.getElementById('campo-estado-carga').textContent = campoPago ? 'Guardado' : 'Sin guardar todavía';
+      document.getElementById('card-campo-estado').textContent = campoPago ? (campoPago.cobrado ? '✓ Cobrado' : 'Pendiente') : 'Sin cargar';
+
+      campoRenderPrecios(campoPago ? campoPago.precios : [], campoDiasHabiles(anio, mes));
+      campoRenderGastos(gastos);
+      campoRenderHistorial(historial);
+      campoCalcular();
+    }
+
+    function campoRenderPrecios(precios, fechasSugeridas) {
+      let html = '';
+      for (let i = 0; i < 10; i++) {
+        const p = precios[i];
+        const fecha = p ? p.fecha : fechasSugeridas[i];
+        const precio = p ? p.precio : '';
+        html += `<tr>
+          <td>${i + 1}</td>
+          <td><input type="date" class="campo-input" id="campo-fecha-${i}" value="${esc(fecha)}"></td>
+          <td><input type="number" class="campo-input" id="campo-precio-${i}" value="${esc(precio)}" placeholder="$/t" inputmode="decimal" oninput="campoCalcular()"></td>
+        </tr>`;
+      }
+      document.getElementById('campo-precios').innerHTML = html;
+    }
+
+    // Toma solo las filas que tienen precio cargado
+    function campoLeerPrecios() {
+      const lista = [];
+      for (let i = 0; i < 10; i++) {
+        const precio = parseFloat(document.getElementById('campo-precio-' + i).value);
+        if (!isNaN(precio)) lista.push({ fecha: document.getElementById('campo-fecha-' + i).value || null, precio });
+      }
+      return lista;
+    }
+
+    function campoCalcular() {
+      const kgHa = parseFloat(document.getElementById('campo-kg-ha').value) || 0;
+      const hectareas = parseFloat(document.getElementById('campo-hectareas').value) || 0;
+      const precios = campoLeerPrecios();
+      const promedio = precios.length ? Math.round(precios.reduce((s, p) => s + p.precio, 0) / precios.length * 100) / 100 : 0;
+      const kg = kgHa * hectareas / 4;
+      const monto = Math.round(kg * promedio / 1000 * 100) / 100;
+
+      document.getElementById('campo-calc-kg').textContent = `${formatNum(kgHa)} × ${formatNum(hectareas)} ÷ 4 = ${formatNum(kg)} kg`;
+      document.getElementById('campo-calc-promedio').textContent = precios.length
+        ? `$ ${formatNum(promedio)} /t (${precios.length} de 10 días)` : 'Cargá los precios';
+      document.getElementById('campo-calc-monto').textContent = precios.length ? formatPeso(monto) : '—';
+      document.getElementById('card-campo-pago').textContent = precios.length ? formatPeso(monto) : '—';
+      const neto = monto - campoTotalGastos;
+      const elNeto = document.getElementById('card-campo-neto');
+      elNeto.textContent = formatPeso(neto);
+      elNeto.className = 'card-value ' + (neto >= 0 ? 'green' : 'red');
+    }
+
+    function campoRenderGastos(gastos) {
+      campoTotalGastos = gastos.reduce((s, g) => s + g.monto, 0);
+      document.getElementById('card-campo-gastos').textContent = formatPeso(campoTotalGastos);
+      const tbody = document.getElementById('tabla-campo-gastos');
+      if (!gastos.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty">Sin gastos en este período</td></tr>'; return; }
+      tbody.innerHTML = gastos.map(g => `<tr>
+        <td>${esc(g.fecha)}</td>
+        <td>${esc(g.concepto)}</td>
+        <td class="mono">${formatPeso(g.monto)}</td>
+        <td><button class="btn btn-danger" onclick="eliminarGastoCampo(${g.id})">Eliminar</button></td>
+      </tr>`).join('');
+    }
+
+    function campoRenderHistorial(pagos) {
+      const tbody = document.getElementById('tabla-campo-historial');
+      if (!pagos.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">Todavía no hay pagos cargados</td></tr>'; return; }
+      tbody.innerHTML = pagos.map(p => `<tr>
+        <td>${CAMPO_MESES[p.mes] || p.mes} ${p.anio}</td>
+        <td class="mono hide-mobile">${formatNum(p.kgACobrar)}</td>
+        <td class="mono hide-mobile">$ ${formatNum(p.precioPromedio)}</td>
+        <td class="mono">${formatPeso(p.monto)}</td>
+        <td><span class="badge ${p.cobrado ? 'badge-green' : 'badge-yellow'}">${p.cobrado ? 'Cobrado' : 'Pendiente'}</span></td>
+        <td><button class="btn btn-secondary" style="padding:3px 10px;font-size:12px" onclick="campoVerPeriodo(${p.anio}, ${p.mes})">Ver</button></td>
+      </tr>`).join('');
+    }
+
+    function campoVerPeriodo(anio, mes) {
+      document.getElementById('campo-anio').value = anio;
+      document.getElementById('campo-mes').value = mes;
+      cargarCampo();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function guardarPagoCampo() {
+      const { anio, mes } = campoPeriodoElegido();
+      const body = {
+        anio, mes,
+        kgHaAnual: parseFloat(document.getElementById('campo-kg-ha').value),
+        hectareas: parseFloat(document.getElementById('campo-hectareas').value),
+        cobrado: document.getElementById('campo-cobrado').checked,
+        precios: campoLeerPrecios()
+      };
+      await fetch(`${API}/campo/pagos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      await cargarCampo();
+    }
+
+    // Si el pago ya está guardado, el tilde de "Cobrado" se guarda en el momento
+    async function campoCambiarCobrado() {
+      if (!campoPago) return;   // si no está guardado, se guarda junto con el pago
+      const cobrado = document.getElementById('campo-cobrado').checked;
+      await fetch(`${API}/campo/pagos/${campoPago.id}/cobrado`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cobrado }) });
+      await cargarCampo();
+    }
+
+    async function eliminarPagoCampo() {
+      if (!campoPago || !confirm('¿Eliminar el pago de este período y sus precios cargados?')) return;
+      await fetch(`${API}/campo/pagos/${campoPago.id}`, { method: 'DELETE' });
+      await cargarCampo();
+    }
+
+    async function registrarGastoCampo() {
+      const { anio, mes } = campoPeriodoElegido();
+      const body = {
+        anio, mes,
+        concepto: document.getElementById('campo-gasto-concepto').value,
+        monto: parseFloat(document.getElementById('campo-gasto-monto').value),
+        fecha: document.getElementById('campo-gasto-fecha').value || null
+      };
+      await fetch(`${API}/campo/gastos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      closeModal('modal-campo-gasto');
+      await cargarCampo();
+    }
+
+    async function eliminarGastoCampo(id) {
+      if (!confirm('¿Eliminar este gasto?')) return;
+      await fetch(`${API}/campo/gastos/${id}`, { method: 'DELETE' });
+      await cargarCampo();
+    }
+
+    // Período inicial del campo: el próximo pago
+    (() => {
+      const { anio, mes } = campoPeriodoActual();
+      document.getElementById('campo-anio').value = anio;
+      document.getElementById('campo-mes').value = mes;
+    })();
+
 
     // Defaults
     const hoy = new Date();
