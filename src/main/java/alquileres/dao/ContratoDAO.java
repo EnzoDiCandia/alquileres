@@ -5,7 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import alquileres.modelo.Contrato;
 import alquileres.utils.Conexion;
@@ -153,18 +155,77 @@ public class ContratoDAO {
     // ─── REGISTRAR AJUSTE DE MONTO ───────────────────────────────────────────────
     // Actualiza el monto_base y registra la fecha del ajuste
 
+    // Antes de cambiar el monto se guarda el valor anterior en el historial,
+    // así los meses previos al ajuste siguen calculándose con el monto viejo.
     public boolean registrarAjuste(int id, double nuevoMonto, java.time.LocalDate fechaAjuste) throws SQLException {
+        crearTablaHistorialSiNoExiste();
+        String sqlHistorial = "INSERT INTO contrato_monto_historial (id_contrato, monto, vigente_hasta) " +
+                "SELECT id, monto_base, ? FROM contrato WHERE id=?";
         String sql = "UPDATE contrato SET monto_base=?, ultimo_ajuste=? WHERE id=?";
-        try (Connection con = Conexion.getConexion();
-                PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setDouble(1, nuevoMonto);
-            ps.setDate(2, java.sql.Date.valueOf(fechaAjuste));
-            ps.setInt(3, id);
-            return ps.executeUpdate() > 0;
+        try (Connection con = Conexion.getConexion()) {
+            con.setAutoCommit(false);   // las dos operaciones se guardan juntas o ninguna
+            try (PreparedStatement psHist = con.prepareStatement(sqlHistorial);
+                    PreparedStatement ps = con.prepareStatement(sql)) {
+                psHist.setDate(1, java.sql.Date.valueOf(fechaAjuste));
+                psHist.setInt(2, id);
+                psHist.executeUpdate();
+
+                ps.setDouble(1, nuevoMonto);
+                ps.setDate(2, java.sql.Date.valueOf(fechaAjuste));
+                ps.setInt(3, id);
+                boolean ok = ps.executeUpdate() > 0;
+                con.commit();
+                return ok;
+            } catch (SQLException e) {
+                con.rollback();
+                throw e;
+            } finally {
+                con.setAutoCommit(true);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             throw e;
         }
+    }
+
+    // ─── MONTOS VIGENTES EN UN MES ───────────────────────────────────────────────
+    // Devuelve, para los contratos que tuvieron un ajuste POSTERIOR al mes pedido,
+    // el monto que se cobraba en ese mes. Los contratos que no aparecen usan su
+    // monto_base actual. Un ajuste con fecha en un mes rige desde ese mismo mes.
+
+    public Map<Integer, Double> montosDelMes(int anio, int mes) throws SQLException {
+        crearTablaHistorialSiNoExiste();
+        Map<Integer, Double> montos = new HashMap<>();
+        String sql = "SELECT id_contrato, monto FROM contrato_monto_historial " +
+                "WHERE YEAR(vigente_hasta) * 100 + MONTH(vigente_hasta) > ? " +
+                "ORDER BY vigente_hasta ASC, id ASC";
+        try (Connection con = Conexion.getConexion();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, anio * 100 + mes);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                // el primer ajuste posterior al mes indica el monto que regía en ese mes
+                montos.putIfAbsent(rs.getInt("id_contrato"), rs.getDouble("monto"));
+            }
+        }
+        return montos;
+    }
+
+    private static boolean tablaHistorialCreada = false;
+
+    private static synchronized void crearTablaHistorialSiNoExiste() throws SQLException {
+        if (tablaHistorialCreada) return;
+        String sql = "CREATE TABLE IF NOT EXISTS contrato_monto_historial (" +
+                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "id_contrato INT NOT NULL, " +
+                "monto DECIMAL(14,2) NOT NULL, " +       // monto que regía ANTES del ajuste
+                "vigente_hasta DATE NOT NULL, " +        // fecha del ajuste que lo reemplazó
+                "INDEX idx_historial_contrato (id_contrato))";
+        try (Connection con = Conexion.getConexion();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.executeUpdate();
+        }
+        tablaHistorialCreada = true;
     }
 
     // ─── CONTRATOS PRÓXIMOS A AJUSTE ─────────────────────────────────────────────

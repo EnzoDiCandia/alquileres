@@ -1697,10 +1697,13 @@
       const anio = document.getElementById('resumen-anio').value;
       const tbody = document.getElementById('tabla-estado-pagos');
       tbody.innerHTML = '';
+      // Monto que regía en el mes elegido (si el contrato se ajustó después, se usa el monto anterior)
+      const montosMes = await fetch(`${API}/contratos/montos/${anio}/${mes}`).then(r => r.json());
       for (const c of contratos) {
         const pagos = await fetch(`${API}/movimientos/contrato/${c.id}/${anio}/${mes}`).then(r => r.json());
         const pagado = pagos.reduce((s, p) => s + p.monto, 0);
-        const adeuda = Math.max(0, c.montoBase - pagado);
+        const montoMes = montosMes[c.id] ?? c.montoBase;
+        const adeuda = Math.max(0, montoMes - pagado);
         let cls, txt;
         if (pagado === 0) { cls = 'badge-red'; txt = 'Sin pagar'; }
         else if (adeuda === 0) { cls = 'badge-green'; txt = 'Pagado'; }
@@ -1708,7 +1711,7 @@
         tbody.innerHTML += `<tr>
       <td>${esc(nombreInquilino(c.idInquilino))}</td>
       <td class="hide-mobile">${esc(nombrePropiedad(c.idPropiedad))}</td>
-      <td class="mono">${formatPeso(c.montoBase)}</td>
+      <td class="mono">${formatPeso(montoMes)}</td>
       <td class="mono ${pagado > 0 ? 'pagado' : ''}">${formatPeso(pagado)}</td>
       <td class="mono ${adeuda > 0 ? 'adeuda' : 'pagado'}">${formatPeso(adeuda)}</td>
       <td><span class="badge ${cls}">${txt}</span></td>

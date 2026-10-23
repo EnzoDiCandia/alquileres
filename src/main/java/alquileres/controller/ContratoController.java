@@ -68,6 +68,12 @@ public class ContratoController {
         return dao.contratosProximosAjuste(dias);
     }
 
+    // Monto que correspondía cobrar en un mes (solo contratos ajustados después de ese mes)
+    @GetMapping("/montos/{anio}/{mes}")
+    public Map<Integer, Double> montosDelMes(@PathVariable int anio, @PathVariable int mes) throws SQLException {
+        return dao.montosDelMes(anio, mes);
+    }
+
     @PutMapping("/{id}/ajuste")
     public boolean registrarAjuste(
             @PathVariable int id,
