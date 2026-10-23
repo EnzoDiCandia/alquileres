@@ -3,6 +3,7 @@ package alquileres.controller;
 import alquileres.dao.ContratoDAO;
 import alquileres.modelo.Contrato;
 import alquileres.service.StorageService;
+import alquileres.utils.Validar;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -52,6 +53,7 @@ public class ContratoController {
 
     @PostMapping
     public boolean insertar(@RequestBody Contrato c) throws SQLException {
+        validarContrato(c);
         return dao.insertarContrato(c);
     }
 
@@ -70,7 +72,9 @@ public class ContratoController {
     public boolean registrarAjuste(
             @PathVariable int id,
             @RequestBody Map<String, String> body) throws SQLException {
+        Validar.requerido(body.get("nuevoMonto"), "nuevo monto");
         double nuevoMonto = Double.parseDouble(body.get("nuevoMonto"));
+        Validar.positivo(nuevoMonto, "El nuevo monto");
         LocalDate fechaAjuste = body.containsKey("fechaAjuste")
                 ? LocalDate.parse(body.get("fechaAjuste"))
                 : LocalDate.now();
@@ -81,7 +85,9 @@ public class ContratoController {
     public boolean actualizarPeriodicidad(
             @PathVariable int id,
             @RequestBody Map<String, String> body) throws SQLException {
+        Validar.requerido(body.get("periodicidadMeses"), "periodicidad");
         int periodicidadMeses = Integer.parseInt(body.get("periodicidadMeses"));
+        Validar.positivo(periodicidadMeses, "La periodicidad");
         LocalDate ultimoAjuste = body.containsKey("ultimoAjuste")
                 ? LocalDate.parse(body.get("ultimoAjuste"))
                 : LocalDate.now();
@@ -150,6 +156,21 @@ public class ContratoController {
     @PutMapping("/{id}")
     public boolean actualizar(@PathVariable int id, @RequestBody Contrato c) throws SQLException {
         c.setId(id);
+        validarContrato(c);
         return dao.actualizarContrato(c);
+    }
+
+    private void validarContrato(Contrato c) {
+        Validar.requerido(c.getIdPropiedad(), "propiedad");
+        Validar.requerido(c.getIdInquilino(), "inquilino");
+        Validar.requerido(c.getFechaInicio(), "fecha de inicio");
+        Validar.requerido(c.getFechaFin(), "fecha de fin");
+        if (!c.getFechaFin().isAfter(c.getFechaInicio())) {
+            throw new IllegalArgumentException("La fecha de fin debe ser posterior a la de inicio");
+        }
+        Validar.positivo(c.getMontoBase(), "El monto");
+        if (c.getDeposito() < 0) {
+            throw new IllegalArgumentException("El depósito no puede ser negativo");
+        }
     }
 }

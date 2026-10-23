@@ -6,6 +6,7 @@ import alquileres.modelo.Movimiento;
 import alquileres.modelo.ResumenMensual;
 import alquileres.dao.RetiroDAO;
 import alquileres.modelo.ResumenMensual;
+import alquileres.utils.Validar;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -35,6 +36,11 @@ public class MovimientoController {
 
     @PostMapping
     public boolean insertar(@RequestBody Movimiento m) throws SQLException {
+        Validar.requerido(m.getIdContrato(), "contrato");
+        Validar.requerido(m.getFecha(), "fecha");
+        Validar.positivo(m.getMonto(), "El monto");
+        Validar.requerido(m.isEsIngreso(), "tipo de movimiento");
+        Validar.mesYAnio(m.getMesReferencia(), m.getAnioReferencia());
         return dao.insertarMovimiento(m);
     }
 
@@ -50,6 +56,10 @@ public class MovimientoController {
 
     @PostMapping("/gasto")
     public boolean registrarGasto(@RequestBody Movimiento m) throws SQLException {
+        Validar.requerido(m.getConcepto(), "concepto");
+        Validar.requerido(m.getFecha(), "fecha");
+        Validar.positivo(m.getMonto(), "El monto");
+        Validar.mesYAnio(m.getMesReferencia(), m.getAnioReferencia());
         return dao.insertarGasto(m);
     }
 

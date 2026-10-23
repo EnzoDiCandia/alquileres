@@ -81,11 +81,13 @@ public class SocioDAO {
     // INSERTAR SOCIO
 
     public boolean insertarSocio(Socio s) throws SQLException {
-        String sql = "INSERT INTO socio (nombre, email) VALUES (?, ?)";
+        String sql = "INSERT INTO socio (nombre, email, usuario, password) VALUES (?, ?, ?, ?)";
         try (Connection con = Conexion.getConexion();
                 PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, s.getNombre());
             ps.setString(2, s.getEmail());
+            ps.setString(3, s.getUsuario());
+            ps.setString(4, s.getPassword());
             int filasAfectadas = ps.executeUpdate();
             return filasAfectadas > 0;
         } catch (SQLException e) {

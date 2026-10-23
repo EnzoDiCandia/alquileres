@@ -2,6 +2,7 @@ package alquileres.controller;
 
 import alquileres.dao.RetiroDAO;
 import alquileres.modelo.Retiro;
+import alquileres.utils.Validar;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
@@ -30,6 +31,9 @@ public class RetiroController {
 
     @PostMapping
     public boolean insertar(@RequestBody Retiro r) throws SQLException {
+        Validar.requerido(r.getIdSocio(), "socio");
+        Validar.positivo(r.getMonto(), "El monto");
+        Validar.mesYAnio(r.getMesReferencia(), r.getAnioReferencia());
         return dao.insertarRetiro(r);
     }
 

@@ -1542,6 +1542,13 @@
       }
       const res = await fetchOriginal(url, opts);
       if (res.status === 401 && usuarioActual) logout();
+      // Si el servidor rechaza un guardado, se avisa y se corta la operación (el formulario queda abierto)
+      else if (!res.ok && metodo !== 'GET') {
+        let mensaje = `No se pudo guardar (error ${res.status})`;
+        try { const data = await res.clone().json(); if (data.mensaje) mensaje = data.mensaje; } catch { }
+        alert(mensaje);
+        throw new Error(mensaje);
+      }
       return res;
     };
     let socios = [], propiedades = [], inquilinos = [], contratos = [];

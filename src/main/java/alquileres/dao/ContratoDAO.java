@@ -19,8 +19,10 @@ public class ContratoDAO {
         c.setId(rs.getInt("id"));
         c.setIdInquilino(rs.getInt("id_inquilino"));
         c.setIdPropiedad(rs.getInt("id_propiedad"));
-        c.setFechaInicio(rs.getDate("fecha_inicio").toLocalDate());
-        c.setFechaFin(rs.getDate("fecha_fin").toLocalDate());
+        java.sql.Date inicio = rs.getDate("fecha_inicio");
+        java.sql.Date fin = rs.getDate("fecha_fin");
+        c.setFechaInicio(inicio != null ? inicio.toLocalDate() : null);
+        c.setFechaFin(fin != null ? fin.toLocalDate() : null);
         c.setMontoBase(rs.getDouble("monto_base"));
         c.setDeposito(rs.getDouble("deposito"));
         c.setArchivoPdfRuta(rs.getString("archivo_pdf_ruta"));

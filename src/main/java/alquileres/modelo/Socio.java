@@ -1,10 +1,13 @@
 package alquileres.modelo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Socio {
     private int id;
     private String nombre;
     private String email;
     private boolean activo;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)   // se recibe en el alta pero nunca se devuelve en el JSON
     private String password;
     private String usuario;
 
